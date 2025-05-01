@@ -28,7 +28,7 @@ export async function initDraw (canvas: HTMLCanvasElement, roomId: string, socke
 
         if(message.type == "chat") {
             const parsedShape = JSON.parse(message.message);
-            existingShapes.push(parsedShape);
+            existingShapes.push(parsedShape.shape);
             clearCanvas(existingShapes, canvas, ctx);
         }
     }
@@ -36,9 +36,6 @@ export async function initDraw (canvas: HTMLCanvasElement, roomId: string, socke
     //Clearing the canvas, and rendering the shapes fetched from the db
     clearCanvas(existingShapes, canvas, ctx);
 
-    // Initialize with black background
-    ctx.fillStyle = "rgba(0, 0, 0, 1)";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Initialize starting points
     let clicked = false;
@@ -71,7 +68,8 @@ export async function initDraw (canvas: HTMLCanvasElement, roomId: string, socke
             type: "chat",
             message: JSON.stringify({
                 shape
-            })
+            }),
+            roomId: roomId
         }))
     })
     
@@ -109,7 +107,7 @@ async function getExistingShapes (roomId: string) {
     
     const shapes = messages.map((x: {message: string}) => {
         const messageData = JSON.parse(x.message);
-        return messageData;
+        return messageData.shape;
     })
 
     return shapes;
