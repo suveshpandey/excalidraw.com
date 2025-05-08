@@ -1,5 +1,6 @@
-import express, { json, Router } from "express";
+import express, { Router } from "express";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -8,10 +9,12 @@ import { JWT_SECRET } from "@repo/backend-common/config";
 import { CreateUserSchema, SigninUserSchema, CreateRoomSchema } from "@repo/common";
 import { prismaClient } from "@repo/db/client";
 import { authenticate } from "../middlewares/authenticate";
+import { checkExistingUser } from "../middlewares/checkExistingUser";
 
 const userRouter: Router = express.Router();
 
-userRouter.post("/signup", async (req, res) => {
+
+userRouter.post("/signup", checkExistingUser, async (req, res) => {
     try{
         const data = CreateUserSchema.safeParse(req.body);
         if(!data.success){
@@ -21,35 +24,47 @@ userRouter.post("/signup", async (req, res) => {
             return;
         }
         
+        //hashing the password
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(req.body.password, saltRounds);
+
         //creating a new user
         const newUser = await prismaClient.user.create({
             data: {
                 email: req.body.email,
-                password: req.body.password,
+                password: hashedPassword,
                 username: req.body.username
             }
         })
         if(newUser){
+            //sign in done, returning a jwt token
+            const token = jwt.sign({
+                userId: newUser?.id
+            }, JWT_SECRET);
+
             res.status(201).json({
-                message: "User successfully signed-up.",
-                email: newUser.email
+                message: "User successfully registered",
+                email: newUser.email,
+                token: token
             })
         }
         else{
             res.json({
-                message: "Signup failed!"
+                message: "Registration failed"
             })
         }
     }
     catch(error){
         res.status(500).json({
-            message: "Internal server error!"
+            message: "Internal server error!",
+            error: error
         })
     }
 })
 
 userRouter.post("/signin", async (req, res) => {
     try{
+        //checking if the inputs are valid
         const parsedData = SigninUserSchema.safeParse(req.body);
         if(!parsedData.success){
             res.status(403).json({
@@ -58,27 +73,36 @@ userRouter.post("/signin", async (req, res) => {
             return;
         }
         
+        //finding a user with the given email
         const user = await prismaClient.user.findFirst({
             where: {
-                email: parsedData.data.email,
-                password: parsedData.data.password
+                email: parsedData.data.email
             }
         })
 
-        if(!user){
-            res.status(403).json({
-                messages: "Wrong Credentials!"            
+        if(!user) {
+            res.status(404).json({
+                message: "Wrong email!"
+            })
+            return;
+        }
+
+        //comparing the given password with the hash password (in database)
+        const isPasswordValid  = await bcrypt.compare(parsedData.data.password, user.password);
+        if(!isPasswordValid) {
+            res.status(404).json({
+                message: "Wrong password!"
             })
             return;
         }
         
-
+        //sign in done, returning a jwt token
         const token = jwt.sign({
             userId: user?.id
         }, JWT_SECRET);
 
         res.status(200).json({
-            message: "User signed-in successfully.",
+            message: "User signed in successfully.",
             token: token
         })
         
@@ -86,6 +110,7 @@ userRouter.post("/signin", async (req, res) => {
     catch(error){
         res.status(500).json({
             message: "Internal server error!",
+            error: error
         })
     }
 })
@@ -129,7 +154,7 @@ userRouter.post("/create-room", authenticate, async (req, res) => {
     }
 })
 
-userRouter.get("/chats/:roomId", async (req, res) => {
+userRouter.get("/chats/:roomId", authenticate, async (req, res) => {
     try{
         const roomId = Number(req.params.roomId);
         const messages = await prismaClient.chat.findMany({
