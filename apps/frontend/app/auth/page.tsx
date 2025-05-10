@@ -16,10 +16,9 @@ export default function AuthPage() {
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    setLoading(true);
 
     try {
+      setLoading(true);
       if (isSignUp) {
         // Signup logic
         const response = await axios.post('http://localhost:8080/api/v1/user/signup', {
@@ -29,7 +28,9 @@ export default function AuthPage() {
         });
 
         if (response.status === 201) {
+          setLoading(false);
           localStorage.setItem("token", response.data.token);
+          localStorage.setItem("username", response.data.userData.username);
           console.log(response.data.token);
           router.push('/dashboard');
         }
@@ -41,12 +42,15 @@ export default function AuthPage() {
         });
 
         if (response.status === 200) {
+          setLoading(false);
           localStorage.setItem("token", response.data.token);
+          localStorage.setItem("username", response.data.userData.username);
           console.log(response.data.token);
           router.push('/dashboard');
         }
       }
     } catch (err) {
+      setLoading(false);
       const axiosError = err as AxiosError;
       if (axiosError.response) {
         switch (axiosError.response.status) {
@@ -156,7 +160,7 @@ export default function AuthPage() {
           )}
 
           {!isSignUp && (
-            <a href="#" className="block text-sm text-blue-600 hover:text-blue-700">
+            <a href="/signup" className="block text-sm text-blue-600 hover:text-blue-700">
               Forgot password?
             </a>
           )}

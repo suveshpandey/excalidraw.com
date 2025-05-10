@@ -44,7 +44,10 @@ userRouter.post("/signup", checkExistingUser, async (req, res) => {
 
             res.status(201).json({
                 message: "User successfully registered",
-                email: newUser.email,
+                userData: {
+                    email: newUser.email,
+                    username: newUser.username
+                },
                 token: token
             })
         }
@@ -103,6 +106,10 @@ userRouter.post("/signin", async (req, res) => {
 
         res.status(200).json({
             message: "User signed in successfully.",
+            userData: {
+                email: user.email,
+                username: user.username
+            },
             token: token
         })
         
@@ -120,7 +127,7 @@ userRouter.post("/create-room", authenticate, async (req, res) => {
         const parsedData = CreateRoomSchema.safeParse(req.body);
         if(!parsedData.success){
             res.status(403).json({
-                    message: "Invalid inputs!"
+                message: "Invalid inputs!"
             })
             return;
         }
@@ -154,7 +161,7 @@ userRouter.post("/create-room", authenticate, async (req, res) => {
     }
 })
 
-userRouter.get("/chats/:roomId", authenticate, async (req, res) => {
+userRouter.get("/chats/:roomId", async (req, res) => {
     try{
         const roomId = Number(req.params.roomId);
         const messages = await prismaClient.chat.findMany({
@@ -170,11 +177,41 @@ userRouter.get("/chats/:roomId", authenticate, async (req, res) => {
         })
     }
     catch(error){
+        console.log(error);
+        alert("error");
         res.status(500).json({
-            message: "Internal server error!"
+            message: "Internal server error!",
+            error: error
         })
     }
 })
+
+userRouter.get("/get-rooms", authenticate, async (req, res) => {
+    try{
+        //@ts-ignore
+        const userId = req.userId;
+        const rooms = await prismaClient.room.findMany({
+            where: {
+                adminId: userId
+            }
+        });
+        if(!rooms) {
+            res.status(404).json({
+                message: "No room found!"
+            });
+            return;
+        }
+        res.status(200).json({
+            message: "Rooms fetched successfully.",
+            rooms: rooms
+        })
+    }
+    catch(error){
+        
+    }
+})
+
+
 
 userRouter.get("/room/:slug", async (req, res) => {
     try{
