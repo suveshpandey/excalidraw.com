@@ -1,9 +1,13 @@
 "use client";
 
-import { WS_BACKEND } from "@/config";
 import { useState } from "react";
 import { useEffect } from "react";
+
+import { ThreeDot } from "react-loading-indicators";
+
 import Canvas from "./Canvas";
+import { WS_BACKEND } from "@/config";
+
 
 export function RoomCanvas ({ roomId }: { roomId: string }) {
     const [socket, setSocket] = useState<WebSocket | null>(null);
@@ -23,8 +27,9 @@ export function RoomCanvas ({ roomId }: { roomId: string }) {
 
 
     if(!socket) {
-        return <div>
-            Connecting to server....
+        return <div className="w-screen h-screen flex flex-col gap-y-3 items-center justify-center">
+            <ThreeDot color="#94aeba" size="medium" text="" textColor="" />
+            Connecting to the server . . . .
         </div>
     }
 

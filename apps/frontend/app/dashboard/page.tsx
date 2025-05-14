@@ -19,9 +19,9 @@ export default function () {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [rooms, setRooms] = useState<Room[]>([]);
-    const router = useRouter();
+    const [username, setUsername] = useState<string | null>("");
 
-    
+    const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -71,6 +71,9 @@ export default function () {
     }
 
     useEffect(() => {
+        const storedUsername = localStorage.getItem("username");
+        setUsername(storedUsername);
+        
         fetchRooms();
     }, [])
 
@@ -89,7 +92,7 @@ export default function () {
                     </div>
                 </div>
                 <div>
-                    <h1 className="text-3xl font-bold opacity-80 text-blue-600">Good Morning <span className="text-blue-700">{localStorage.getItem("username")}</span> . . .</h1>
+                    <h1 className="text-3xl font-bold opacity-80 text-blue-600">Good Morning <span className="text-blue-700">{username}</span> . . .</h1>
                     <div className="w-[100%] flex sm:justify-evenly flex-wrap justify-center pt-20">
                         
                         {/* Room Count Card */}

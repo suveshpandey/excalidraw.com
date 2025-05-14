@@ -18,6 +18,17 @@ type Shape = {
     "startY": number,
     "endX": number,
     "endY": number
+} | {
+    type: "arrow",
+    "startX": number,
+    "startY": number,
+    "endX": number,
+    "endY": number
+} | {
+    type: "text",
+    x: number,
+    y: number,
+    value: string
 }
 
 export class Game {
@@ -56,7 +67,7 @@ export class Game {
         this.canvas.removeEventListener("mousemove", this.mouseMoveHandler);
     }
 
-    setTool(tool: "rect" | "circle" | "line") {
+    setTool(tool: "rect" | "circle" | "line" | "arrow" | "text") {
         this.selectedTool = tool;
     }
 
@@ -80,7 +91,7 @@ export class Game {
     clearCanvas () {
         // Clear and redraw black background first
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.ctx.fillStyle = "rgba(0, 0, 0, 1)";
+        this.ctx.fillStyle = "rgba(13, 27, 42)";
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.existingShapes.map((shape) => {
@@ -93,6 +104,16 @@ export class Game {
                 this.ctx.arc(shape.centerX, shape.centerY, Math.abs(shape.radius), 0, Math.PI * 2);
                 this.ctx.stroke();
                 this.ctx.closePath();
+            }
+            else if(shape.type === "line") {
+                this.ctx.beginPath();
+                this.ctx.moveTo(shape.startX, shape.startY);
+                this.ctx.lineTo(shape.endX, shape.endY);
+                this.ctx.stroke();
+                this.ctx.closePath();
+            }
+            else if(shape.type === "arrow") {
+                this.drawArrow(shape.startX, shape.startY, shape.endX, shape.endY);
             }
         })
     }
@@ -112,6 +133,7 @@ export class Game {
         //@ts-ignore
         const selectedTool = this.selectedTool;
         let shape: Shape | null = null;
+
         if (selectedTool === "rect") {
             shape = {
                 type: "rect",
@@ -130,9 +152,28 @@ export class Game {
                 centerY: this.startY + radius
             };
         }
+        else if(selectedTool === "line") {
+            shape = {
+                type: "line",
+                startX: this.startX,
+                startY: this.startY,
+                endX: e.clientX,
+                endY: e.clientY
+            };
+        }
+        else if(selectedTool === "arrow") {
+            shape = {
+                type: "arrow",
+                startX: this.startX,
+                startY: this.startY,
+                endX: e.clientX,
+                endY: e.clientY
+            }
+        }
+
         if(shape == null) return;
+
         this.existingShapes.push(shape);
-        
         this.socket.send(JSON.stringify({
             type: "chat",
             message: JSON.stringify({
@@ -147,6 +188,9 @@ export class Game {
             const width = e.clientX - this.startX;
             const height = e.clientY - this.startY;
             
+            const endX = e.clientX;
+            const endY = e.clientY;
+
             this.clearCanvas();
             this.ctx.strokeStyle = "rgba(255, 255, 255, 1)";
         
@@ -165,6 +209,19 @@ export class Game {
                 this.ctx.stroke();
                 this.ctx.closePath();
             }
+            else if(selectedTool == "line") {
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.startX, this.startY);
+                this.ctx.lineTo(endX, endY);
+                this.ctx.stroke();
+            }
+            else if(selectedTool === "arrow") {
+                this.drawArrow(this.startX, this.startY, endX, endY);
+            }
+            else if(selectedTool === "text") {
+                this.ctx.font = "50px Arial";
+                this.ctx.fillText("Hello World",10,80);
+            }
         }
     }
 
@@ -174,5 +231,26 @@ export class Game {
         this.canvas.addEventListener("mouseup", this.mouseUpHandler);
 
         this.canvas.addEventListener("mousemove", this.mouseMoveHandler);
+    }
+
+    drawArrow(fromX: number, fromY: number, toX: number, toY: number) {
+        const headLength = 10;
+        const angle = Math.atan2(toY - fromY, toX - fromX);
+
+        //Draw line
+        this.ctx.beginPath();
+        this.ctx.moveTo(fromX, fromY);
+        this.ctx.lineTo(toX, toY);
+        this.ctx.stroke();
+
+        //Draw arrowhead
+        this.ctx.beginPath();
+        this.ctx.moveTo(toX, toY);
+        this.ctx.lineTo(toX - headLength * Math.cos(angle - Math.PI / 6), toY - headLength * Math.sin(angle - Math.PI / 6));
+        this.ctx.lineTo(toX - headLength * Math.cos(angle + Math.PI / 6), toY - headLength * Math.sin(angle + Math.PI / 6));
+        this.ctx.lineTo(toX, toY);
+        this.ctx.lineTo(toX - headLength * Math.cos(angle - Math.PI / 6), toY - headLength * Math.sin(angle - Math.PI / 6));
+        this.ctx.stroke();
+        this.ctx.closePath();
     }
 }
