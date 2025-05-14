@@ -39,11 +39,12 @@ export class Game {
     private clicked: boolean;
     private startX: number;
     private startY: number;
+    private textInput: HTMLInputElement;
     private selectedTool: Tool;
 
     socket: WebSocket;
 
-    constructor(canvas: HTMLCanvasElement, roomId: string, socket: WebSocket) {
+    constructor(canvas: HTMLCanvasElement, roomId: string, socket: WebSocket, textInput: HTMLInputElement) {
         this.canvas = canvas;
         this.ctx = canvas.getContext("2d")!;
         this.existingShapes = [];
@@ -52,6 +53,7 @@ export class Game {
         this.clicked = false;
         this.startX = 0;
         this.startY = 0;
+        this.textInput = textInput
         this.selectedTool = "rect";
 
         this.init();
@@ -115,6 +117,11 @@ export class Game {
             else if(shape.type === "arrow") {
                 this.drawArrow(shape.startX, shape.startY, shape.endX, shape.endY);
             }
+            else if(shape.type === "text") {
+                this.ctx.font = "20px Arial";
+                this.ctx.fillStyle = "#94a3b8";
+                this.ctx.fillText(shape.value, shape.x, shape.y);
+            }
         })
     }
 
@@ -122,6 +129,40 @@ export class Game {
         this.clicked = true;
         this.startX = e.clientX;
         this.startY = e.clientY;
+
+        if(this.selectedTool === "text") {
+            const input = this.textInput;
+            input.style.display = "block";
+            input.style.position = "fixed";
+            input.style.left = `${e.clientX}px`;
+            input.style.top = `${e.clientY}px`;
+            input.value = "";
+            input.focus();
+
+            input.onkeydown = (event) => {
+                if(event.key === "Enter") {
+                    event.preventDefault();
+                    const value = input.value;
+                    input.style.display = "none";
+
+                    const shape: Shape = {
+                        type: "text",
+                        x: this.startX,
+                        y: this.startY,
+                        value: value
+                    };
+
+                    this.existingShapes.push(shape);
+                    this.clearCanvas();
+
+                    this.socket.send(JSON.stringify({
+                        type: "chat",
+                        message: JSON.stringify({shape}),
+                        roomId: this.roomId
+                    }));
+                }
+            };
+        }
     }
 
     mouseUpHandler = (e:any) => {
@@ -217,10 +258,6 @@ export class Game {
             }
             else if(selectedTool === "arrow") {
                 this.drawArrow(this.startX, this.startY, endX, endY);
-            }
-            else if(selectedTool === "text") {
-                this.ctx.font = "50px Arial";
-                this.ctx.fillText("Hello World",10,80);
             }
         }
     }

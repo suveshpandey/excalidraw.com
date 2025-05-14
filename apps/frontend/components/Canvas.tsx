@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { useEffect } from "react";
 
-import { Square, Circle, Minus, ArrowUpRight, TextCursorInputIcon, LetterTextIcon } from 'lucide-react';
+import { Square, Circle, Minus, ArrowUpRight, LetterTextIcon } from 'lucide-react';
 
 import { Game } from "@/draw/game";
 
@@ -16,6 +16,7 @@ export default function Canvas ({
     socket: WebSocket
 }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const inputRef = useRef<HTMLInputElement>(null);
     const [game, setGame] = useState<Game>();
     const [selectedTool, setSelectedTool] = useState<Tool>("rect")
     
@@ -25,8 +26,8 @@ export default function Canvas ({
 
     useEffect(() => {
 
-        if(canvasRef.current) {
-            const g = new Game(canvasRef.current, roomId, socket);
+        if(canvasRef.current && inputRef.current) {
+            const g = new Game(canvasRef.current, roomId, socket, inputRef.current);
             setGame(g);
 
             return () => {
@@ -38,8 +39,25 @@ export default function Canvas ({
 
     return (
         <div className="h-screen w-screen overflow-hidden">
-            <canvas ref={canvasRef} className="" width={window.innerWidth} height={window.innerHeight}></canvas>
-            <Topbar selectedTool={selectedTool} setSelectedTool={setSelectedTool} />
+            <canvas 
+                ref={canvasRef} 
+                className="" 
+                width={window.innerWidth} 
+                height={window.innerHeight}>
+            </canvas>
+            
+            <input 
+                type="text" 
+                ref={inputRef}  
+                placeholder="write here. . ."
+                className="absolute bg-gray-900 border text-slate-300 px-3 py-1 rounded shadow-md outline:none" 
+                style={{ display: "none", zIndex: 1000 }} 
+            />
+            
+            <Topbar 
+                selectedTool={selectedTool} 
+                setSelectedTool={setSelectedTool} 
+            />
         </div>
     )
 }
