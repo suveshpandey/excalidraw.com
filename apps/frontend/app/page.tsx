@@ -75,7 +75,7 @@ export default function Home() {
                 ))}
               </ul>
               <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-all">
-                <Link href="/signup">Try It For Free</Link>
+                <Link href="/auth">Try It For Free</Link>
               </Button>
             </div>
           </div>
@@ -89,7 +89,7 @@ export default function Home() {
             Join thousands of teams who use Excaliboard to collaborate and create amazing things together.
           </p>
           <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 rounded-lg text-lg font-medium transition-all transform hover:scale-105">
-            <Link href="/signup">Get Started Now</Link>
+            <Link href="/auth">Get Started Now</Link>
           </Button>
         </div>
       </section>

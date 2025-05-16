@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { useEffect } from "react";
 
-import { Square, Circle, Minus, ArrowUpRight, LetterTextIcon } from 'lucide-react';
+import { Square, Circle, Minus, ArrowUpRight, LetterTextIcon, Undo2Icon } from 'lucide-react';
 
 import { Game } from "@/draw/game";
 
@@ -65,11 +65,16 @@ function Topbar ({selectedTool, setSelectedTool} : {
     selectedTool: Tool,
     setSelectedTool: (s: Tool) => void
 }) {
-    return <div className="h-12 w-74 bg-[#1b263b] rounded-md fixed top-2 left-2 flex flex-row justify-center items-center gap-x-3 ">
-        <button onClick={() => setSelectedTool("rect")} className={`py-2 px-4 ${selectedTool == "rect" ? "bg-slate-700 text-green-300": ""} rounded-full cursor-pointer transition-all duration-300`}><Square size={20} strokeWidth={1.5} /></button>
-        <button onClick={() => setSelectedTool("circle")} className={`py-2 px-4 ${selectedTool == "circle" ? "bg-slate-700 text-green-300": ""} rounded-full cursor-pointer transition-all duration-300`}><Circle size={20} strokeWidth={1.5} /></button>
-        <button onClick={() => setSelectedTool("line")} className={`py-2 px-4 ${selectedTool == "line" ? "bg-slate-700 text-green-300": ""} rounded-full cursor-pointer transition-all duration-300`}><Minus size={20} strokeWidth={1.5} /></button>
-        <button onClick={() => setSelectedTool("arrow")} className={`py-2 px-4 ${selectedTool == "arrow" ? "bg-slate-700 text-green-300": ""} rounded-full cursor-pointer transition-all duration-300`}><ArrowUpRight size={20} strokeWidth={1.5} /></button>
-        <button onClick={() => setSelectedTool("text")} className={`py-2 px-4 ${selectedTool == "text" ? "bg-slate-700 text-green-300": ""} rounded-full cursor-pointer transition-all duration-300`}><LetterTextIcon size={20} strokeWidth={1.5} /></button>
+    return <div className="w-full flex justify-between fixed top-2 px-2">
+        <div className="h-12 w-auto px-5 bg-gray-700 rounded-md flex flex-row  items-center justify-between gap-x-3 ">
+            <button onClick={() => setSelectedTool("rect")} className={`py-2 px-4 ${selectedTool == "rect" ? "bg-slate-600 text-green-300": ""} rounded-full cursor-pointer transition-all duration-300`}><Square size={20} strokeWidth={1.5} /></button>
+            <button onClick={() => setSelectedTool("circle")} className={`py-2 px-4 ${selectedTool == "circle" ? "bg-slate-600 text-green-300": ""} rounded-full cursor-pointer transition-all duration-300`}><Circle size={20} strokeWidth={1.5} /></button>
+            <button onClick={() => setSelectedTool("arrow")} className={`py-2 px-4 ${selectedTool == "arrow" ? "bg-slate-600 text-green-300": ""} rounded-full cursor-pointer transition-all duration-300`}><ArrowUpRight size={20} strokeWidth={1.5} /></button>
+            <button onClick={() => setSelectedTool("line")} className={`py-2 px-4 ${selectedTool == "line" ? "bg-slate-600 text-green-300": ""} rounded-full cursor-pointer transition-all duration-300`}><Minus size={20} strokeWidth={1.5} /></button>
+            <button onClick={() => setSelectedTool("text")} className={`py-2 px-4 ${selectedTool == "text" ? "bg-slate-600 text-green-300": ""} rounded-full cursor-pointer transition-all duration-300`}><LetterTextIcon size={20} strokeWidth={1.5} /></button>
+        </div>
+        <div className="h-12 w-auto px-5 bg-gray-700 rounded-md flex flex-row  items-center justify-between gap-x-3 cursor-pointer ">
+            <Undo2Icon />
+        </div>
     </div>
 }

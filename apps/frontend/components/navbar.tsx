@@ -41,7 +41,7 @@ export function Navbar() {
           </div>
           
           <Button asChild className="bg-blue-600 hover:bg-blue-700 transition-colors">
-            <Link href="/signup">Sign Up</Link>
+            <Link href="/auth">Sign Up</Link>
           </Button>
         </div>
       </div>
