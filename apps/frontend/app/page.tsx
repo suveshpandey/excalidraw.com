@@ -1,3 +1,5 @@
+"use client"
+
 import { Button } from "../components/ui/button";
 import { PencilRuler, Share2, Users, Zap } from "lucide-react";
 import Link from "next/link";
@@ -5,8 +7,20 @@ import { FeatureCard } from "../components/feature-card";
 import { HeroSection } from "../components/hero-section";
 import { Navbar } from "../components/navbar";
 import { Footer } from "../components/footer";
+import { useRouter } from 'next/navigation';
+import { useEffect } from "react";
 
 export default function Home() {
+  const router = useRouter();
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if(token !== null && token !== "") {
+      router.push("/dashboard");
+    }
+  
+  }, [router]);
+
   return (
     <main className="min-h-screen bg-white">
       <Navbar />

@@ -211,8 +211,6 @@ userRouter.get("/get-rooms", authenticate, async (req, res) => {
     }
 })
 
-
-
 userRouter.get("/room/:slug", async (req, res) => {
     try{
         const slug = req.params.slug;
@@ -230,6 +228,44 @@ userRouter.get("/room/:slug", async (req, res) => {
             message: "Internal server error!"
         })
     }
+})
+
+userRouter.delete("/delete-last-chat", authenticate, async (req, res) => {
+    try {
+        //@ts-ignore
+        const userId = req.userId;
+
+        const lastChat = await prismaClient.chat.findFirst({
+            where: {
+                userId: userId,
+            },
+            orderBy: {
+                id: "desc"
+            },
+        })
+
+        if (!lastChat) {
+            res.status(404).json({ message: "No chat found to delete." });
+            return
+        }
+        
+        //Delete the ladt chat
+        await prismaClient.chat.delete({
+            where: {
+                id: lastChat.id
+            }
+        });
+
+        res.status(200).json({
+            message: "Last chat deleted successfully.",
+            deletedChat: lastChat
+        })
+    }
+    catch (error) {
+        console.error("Error deleting last chat:", error);
+        res.status(500).json({ message: "Internal server error." });
+    }
+
 })
 
 export default userRouter

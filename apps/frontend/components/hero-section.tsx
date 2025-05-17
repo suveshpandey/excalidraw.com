@@ -33,7 +33,7 @@ export function HeroSection() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-6 rounded-lg text-lg shadow-lg transition-all transform hover:translate-y-[-2px]">
-                <Link href="/signup">Get Started</Link>
+                <Link href="/auth">Get Started</Link>
               </Button>
               <Button asChild variant="outline" className="group border-blue-200 hover:border-blue-400 px-8 py-6 rounded-lg text-lg">
                 <Link href="#demo" className="flex items-center">

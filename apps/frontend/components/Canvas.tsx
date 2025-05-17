@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { Square, Circle, Minus, ArrowUpRight, LetterTextIcon, Undo2Icon } from 'lucide-react';
 
 import { Game } from "@/draw/game";
+import axios from "axios";
+import { HTTP_BACKEND } from "@/config";
 
 
 export type Tool = "rect" | "circle" | "line" | "arrow" | "text";
@@ -19,7 +21,7 @@ export default function Canvas ({
     const inputRef = useRef<HTMLInputElement>(null);
     const [game, setGame] = useState<Game>();
     const [selectedTool, setSelectedTool] = useState<Tool>("rect")
-    
+
     useEffect(() => {
         game?.setTool(selectedTool);
     }, [selectedTool, game])
@@ -57,14 +59,45 @@ export default function Canvas ({
             <Topbar 
                 selectedTool={selectedTool} 
                 setSelectedTool={setSelectedTool} 
+                game={ game }
             />
         </div>
     )
 }
-function Topbar ({selectedTool, setSelectedTool} : {
+function Topbar ({selectedTool, setSelectedTool, game} : {
     selectedTool: Tool,
-    setSelectedTool: (s: Tool) => void
+    setSelectedTool: (s: Tool) => void,
+    game?: Game
 }) {
+
+    const [token, setToken] = useState<string | null>(null);
+
+    useEffect(() => {
+        const t = localStorage.getItem("token");
+        setToken(t);
+    }, [])
+
+    const handleDeleteShape = async () => {
+        try {
+            console.log("inside delete req", token)
+            const response = await axios.delete(`${HTTP_BACKEND}/delete-last-chat`, {
+                headers: {
+                    authorization: token
+                }
+            })
+            if(response.status === 200 && game) {
+                console.log("last shape deleted successfully.");
+                game.removeLastShape();
+            }
+            else {
+                console.log("Failed to delete last shape.")
+            }
+        }
+        catch (error) {
+            console.log("Server error.", error)
+        }
+    }
+
     return <div className="w-full flex justify-between fixed top-2 px-2">
         <div className="h-12 w-auto px-5 bg-gray-700 rounded-md flex flex-row  items-center justify-between gap-x-3 ">
             <button onClick={() => setSelectedTool("rect")} className={`py-2 px-4 ${selectedTool == "rect" ? "bg-slate-600 text-green-300": ""} rounded-full cursor-pointer transition-all duration-300`}><Square size={20} strokeWidth={1.5} /></button>
@@ -73,8 +106,10 @@ function Topbar ({selectedTool, setSelectedTool} : {
             <button onClick={() => setSelectedTool("line")} className={`py-2 px-4 ${selectedTool == "line" ? "bg-slate-600 text-green-300": ""} rounded-full cursor-pointer transition-all duration-300`}><Minus size={20} strokeWidth={1.5} /></button>
             <button onClick={() => setSelectedTool("text")} className={`py-2 px-4 ${selectedTool == "text" ? "bg-slate-600 text-green-300": ""} rounded-full cursor-pointer transition-all duration-300`}><LetterTextIcon size={20} strokeWidth={1.5} /></button>
         </div>
-        <div className="h-12 w-auto px-5 bg-gray-700 rounded-md flex flex-row  items-center justify-between gap-x-3 cursor-pointer ">
+        <button 
+            onClick={handleDeleteShape}
+            className="h-12 w-auto px-5 bg-gray-700 hover:bg-gray-600 hover:text-red-200 rounded-md flex flex-row items-center justify-between gap-x-3 cursor-pointer transition-all duration-300 ">
             <Undo2Icon />
-        </div>
+        </button>
     </div>
 }

@@ -59,6 +59,7 @@ export class Game {
         this.init();
         this.initHandlers();
         this.initMouseHandlers();
+        this.removeLastShape();
     }
 
     destroy () {
@@ -91,6 +92,7 @@ export class Game {
     }
 
     clearCanvas () {
+        console.log("clear canvas called")
         // Clear and redraw black background first
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.fillStyle = "rgba(13, 27, 42)";
@@ -289,5 +291,12 @@ export class Game {
         this.ctx.lineTo(toX - headLength * Math.cos(angle - Math.PI / 6), toY - headLength * Math.sin(angle - Math.PI / 6));
         this.ctx.stroke();
         this.ctx.closePath();
+    }
+
+    removeLastShape(){
+        if(this.existingShapes.length > 0) {
+            this.existingShapes.pop(); //Removes ladt shape
+            this.clearCanvas(); //Redraw canvas
+        }
     }
 }

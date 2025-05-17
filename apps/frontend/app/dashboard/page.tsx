@@ -1,7 +1,7 @@
 'use client'
 import { HTTP_BACKEND } from "@/config";
 import axios from "axios";
-import { MousePointerSquareDashed } from "lucide-react";
+import { MousePointerSquareDashed, LogOutIcon } from "lucide-react";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
@@ -70,12 +70,17 @@ export default function () {
         console.log("rooms: ", response.data.rooms);
     }
 
+    const handleLogOut = () => {
+        localStorage.clear();
+        router.push("/");
+    }
+
     useEffect(() => {
         const storedUsername = localStorage.getItem("username");
         setUsername(storedUsername);
         
         fetchRooms();
-    }, [])
+    }, []);
 
     return (
         <div className="h-screen w-screen bg-slate-200 text-slate-800 flex justify-center">
@@ -87,8 +92,8 @@ export default function () {
                         <MousePointerSquareDashed className="h-8 w-8 text-blue-600" />
                         <span className="font-bold text-xl text-gray-900">Excaliboard</span>
                     </Link>
-                    <div>
-                        <button className="h-10 px-6 rounded-full bg-slate-600 text-white">User</button>
+                    <div className="flex gap-x-1">
+                        <button onClick={handleLogOut} className="h-10 px-6 flex items-center justify-between gap-x-3 rounded-full bg-slate-500 hover:bg-slate-600 cursor-pointer text-white transition-all duration-300"><span>Logout</span><LogOutIcon /></button>
                     </div>
                 </div>
                 <div>
@@ -105,7 +110,7 @@ export default function () {
                                 </div>
                                 <div>
                                 <h3 className="text-lg font-semibold text-gray-700">Active Rooms</h3>
-                                <p className="text-gray-500 text-sm mt-1">{rooms.length | 0} active spaces</p>
+                                <p className="text-gray-500 text-sm mt-1"><span className="text-blue-500">{rooms.length | 0}</span> active spaces</p>
                                 </div>
                             </div>
                             <div className="max-h-[300px] overflow-y-auto space-y-2">
@@ -146,7 +151,7 @@ export default function () {
                                 placeholder="Drawing Class"
                                 value={roomSlag}
                                 onChange={(e) => setRoomSlag(e.target.value)}
-                                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                                 />
                             </div>
                             {error && (
