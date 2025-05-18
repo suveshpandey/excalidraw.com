@@ -6,6 +6,7 @@ import { Square, Circle, Minus, ArrowUpRight, LetterTextIcon, Undo2Icon } from '
 import { Game } from "@/draw/game";
 import axios from "axios";
 import { HTTP_BACKEND } from "@/config";
+import { getExistingShapes } from "@/draw/http";
 
 
 export type Tool = "rect" | "circle" | "line" | "arrow" | "text";
@@ -60,14 +61,16 @@ export default function Canvas ({
                 selectedTool={selectedTool} 
                 setSelectedTool={setSelectedTool} 
                 game={ game }
+                roomId={ roomId }
             />
         </div>
     )
 }
-function Topbar ({selectedTool, setSelectedTool, game} : {
+function Topbar ({selectedTool, setSelectedTool, game, roomId} : {
     selectedTool: Tool,
     setSelectedTool: (s: Tool) => void,
-    game?: Game
+    game?: Game,
+    roomId: string
 }) {
 
     const [token, setToken] = useState<string | null>(null);
@@ -79,7 +82,6 @@ function Topbar ({selectedTool, setSelectedTool, game} : {
 
     const handleDeleteShape = async () => {
         try {
-            console.log("inside delete req", token)
             const response = await axios.delete(`${HTTP_BACKEND}/delete-last-chat`, {
                 headers: {
                     authorization: token
@@ -87,7 +89,8 @@ function Topbar ({selectedTool, setSelectedTool, game} : {
             })
             if(response.status === 200 && game) {
                 console.log("last shape deleted successfully.");
-                game.removeLastShape();
+                game.existingShapes = await getExistingShapes(roomId);
+                game.clearCanvas();
             }
             else {
                 console.log("Failed to delete last shape.")

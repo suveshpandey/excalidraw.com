@@ -34,7 +34,7 @@ type Shape = {
 export class Game {
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
-    private existingShapes: Shape[];
+    public existingShapes: Shape[];
     private roomId: string;
     private clicked: boolean;
     private startX: number;
@@ -59,7 +59,6 @@ export class Game {
         this.init();
         this.initHandlers();
         this.initMouseHandlers();
-        this.removeLastShape();
     }
 
     destroy () {
@@ -168,10 +167,18 @@ export class Game {
     }
 
     mouseUpHandler = (e:any) => {
+        if(!this.clicked) return;
+
         this.clicked = false;
-            
+
         const width = e.clientX - this.startX;
         const height = e.clientY - this.startY;
+
+        // Debounce check - only create shape if we have significant movement
+        if (Math.abs(width) < 5 && Math.abs(height) < 5 && this.selectedTool !== "text") {
+            this.clearCanvas();
+            return;
+        }
 
         //@ts-ignore
         const selectedTool = this.selectedTool;

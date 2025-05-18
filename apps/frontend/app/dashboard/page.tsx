@@ -85,9 +85,9 @@ export default function () {
     return (
         <div className="h-screen w-screen bg-slate-200 text-slate-800 flex justify-center">
             {/* Actual Page Div */}
-            <div className="h-screen w-screen xl:w-[70%]">
+            <div className="h-screen w-screen xl:w-[70%] px-6">
                 {/* Navbar */}
-                <div className="h-16 px-6 sm:px-0  flex justify-between items-center">
+                <div className="h-16 flex justify-between items-center">
                     <Link href="/" className="flex items-center space-x-2">
                         <MousePointerSquareDashed className="h-8 w-8 text-blue-600" />
                         <span className="font-bold text-xl text-gray-900">Excaliboard</span>
@@ -98,7 +98,7 @@ export default function () {
                 </div>
                 <div>
                     <h1 className="text-3xl font-bold opacity-80 text-blue-600">Good Morning <span className="text-blue-700">{username}</span> . . .</h1>
-                    <div className="w-[100%] flex sm:justify-evenly flex-wrap justify-center pt-20">
+                    <div className="w-[100%] flex sm:justify-evenly items-center flex-wrap justify-center pt-20 gap-y-3">
                         
                         {/* Room Count Card */}
                         <div className="w-[400px] bg-white rounded-xl shadow-sm p-6 transition-all duration-300 hover:shadow-md border border-gray-100">
@@ -124,7 +124,7 @@ export default function () {
                                     <span className="text-gray-700 font-medium truncate">{room.slug}</span>
                                     </div>
                                     <button 
-                                    className="opacity-0 group-hover:opacity-100 text-blue-600 hover:text-blue-700 px-3 py-1.5 text-sm rounded-md transition-all duration-200 cursor-pointer"
+                                    className=" text-blue-600 hover:text-blue-700 bg-blue-100 px-3 py-1 text-sm rounded-full transition-all duration-200 cursor-pointer"
                                     onClick={() => {
                                         router.push(`/canvas/${room.id}`);
                                     }}
