@@ -230,14 +230,23 @@ userRouter.get("/room/:slug", async (req, res) => {
     }
 })
 
-userRouter.delete("/delete-last-chat", authenticate, async (req, res) => {
+userRouter.delete("/delete-last-chat/:roomId", authenticate, async (req, res) => {
     try {
         //@ts-ignore
         const userId = req.userId;
+        const roomId = req.params.roomId
+
+        if(!roomId) {
+            res.status(403).json({
+                message: "roomId is not provided"
+            })
+            return;
+        }
 
         const lastChat = await prismaClient.chat.findFirst({
             where: {
                 userId: userId,
+                roomId: Number(roomId)
             },
             orderBy: {
                 id: "desc"

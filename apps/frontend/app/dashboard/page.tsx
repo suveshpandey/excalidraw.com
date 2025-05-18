@@ -23,6 +23,7 @@ export default function () {
 
     const router = useRouter();
 
+    //Create Room Function
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
@@ -93,7 +94,7 @@ export default function () {
                         <span className="font-bold text-xl text-gray-900">Excaliboard</span>
                     </Link>
                     <div className="flex gap-x-1">
-                        <button onClick={handleLogOut} className="h-10 px-6 flex items-center justify-between gap-x-3 rounded-full bg-slate-500 hover:bg-slate-600 cursor-pointer text-white transition-all duration-300"><span>Logout</span><LogOutIcon /></button>
+                        <button onClick={handleLogOut} className="h-10 px-6 flex items-center justify-between gap-x-3 rounded-full bg-slate-500 hover:bg-slate-600 active:bg-slate-700 cursor-pointer text-white transition-all duration-300"><span>Logout</span><LogOutIcon /></button>
                     </div>
                 </div>
                 <div>

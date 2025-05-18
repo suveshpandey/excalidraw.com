@@ -53,7 +53,7 @@ export default function Canvas ({
                 type="text" 
                 ref={inputRef}  
                 placeholder="write here. . ."
-                className="absolute bg-gray-900 border text-slate-300 px-3 py-1 rounded shadow-md outline:none" 
+                className="absolute text-slate-300 px-1 py-1 rounded shadow-md outline-none border-b border-slate-600" 
                 style={{ display: "none", zIndex: 1000 }} 
             />
             
@@ -82,10 +82,10 @@ function Topbar ({selectedTool, setSelectedTool, game, roomId} : {
 
     const handleDeleteShape = async () => {
         try {
-            const response = await axios.delete(`${HTTP_BACKEND}/delete-last-chat`, {
+            const response = await axios.delete(`${HTTP_BACKEND}/delete-last-chat/${roomId}`, {
                 headers: {
                     authorization: token
-                }
+                },
             })
             if(response.status === 200 && game) {
                 console.log("last shape deleted successfully.");
@@ -111,7 +111,7 @@ function Topbar ({selectedTool, setSelectedTool, game, roomId} : {
         </div>
         <button 
             onClick={handleDeleteShape}
-            className="h-12 w-auto px-5 bg-gray-700 hover:bg-gray-600 hover:text-red-200 rounded-md flex flex-row items-center justify-between gap-x-3 cursor-pointer transition-all duration-300 ">
+            className="h-12 w-auto px-5 bg-gray-700 hover:bg-gray-600 active:bg-slate-500 hover:text-red-200 rounded-md flex flex-row items-center justify-between gap-x-3 cursor-pointer transition-all duration-300 ">
             <Undo2Icon />
         </button>
     </div>
