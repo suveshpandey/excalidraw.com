@@ -27,7 +27,7 @@ function App() {
     const router = useRouter();
 
 
-        //Create Room Function
+    //Create Room Function
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
@@ -46,6 +46,7 @@ function App() {
             setLoading(false);
             if(response.status == 201) {
                 setLoading(false);
+                setError("");
                 console.log(`Room created, roomId: ${response.data.roomId}`);
                 // router.push(`/canvas/${response.data.roomId}`);
                 fetchRooms();
@@ -176,7 +177,7 @@ function App() {
                 </span>
               </div>
               
-              <div className="divide-y divide-white/5">
+              <div className="divide-y divide-white/5 h-[400px] overflow-y-scroll scrollbar-dark">
                 {rooms.length > 0 ? (
                   rooms.map((room) => (
                     <RoomCard key={room.id} room={room} onJoin={joinRoom} />

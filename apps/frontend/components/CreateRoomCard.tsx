@@ -18,7 +18,7 @@ const CreateRoomCard: React.FC<CreateRoomCardProps> = ({
   onSubmit
 }) => {
   return (
-    <section className="bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden flex flex-col">
+    <section className="h-[500px] bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 overflow-hidden flex flex-col">
       <div className="p-6 border-b border-white/10 flex items-center gap-3">
         <div className="p-2 bg-purple-600/20 rounded-lg">
           <Plus className="w-5 h-5 text-purple-400" />

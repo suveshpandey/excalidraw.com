@@ -19,6 +19,28 @@
   }
 }
 
+/* scrollbar style */
+@layer utilities {
+  .scrollbar-dark::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-dark::-webkit-scrollbar-track {
+    background: #2d3748;
+  }
+
+  .scrollbar-dark::-webkit-scrollbar-thumb {
+    background: #4a5568;
+    border-radius: 4px;
+  }
+
+  .scrollbar-dark::-webkit-scrollbar-thumb:hover {
+    background: #24305d;
+  }
+}
+
+
 body {
   background: var(--background);
   color: var(--foreground);
