@@ -21,9 +21,6 @@ const Navbar: React.FC<NavbarProps> = ({ onLogout }) => {
         
         <div className="flex items-center space-x-3">
           <button className="p-2.5 text-blue-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-all duration-200 cursor-pointer">
-            <Settings className="h-5 w-5" />
-          </button>
-          <button className="p-2.5 text-blue-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-all duration-200 cursor-pointer">
             <User className="h-5 w-5" />
           </button>
           <button 

@@ -9,6 +9,7 @@ import { Footer } from "../components/Footer";
 import { useRouter } from 'next/navigation';
 import { useEffect } from "react";
 
+
 export default function Home() {
   const router = useRouter();
   useEffect(() => {
@@ -19,6 +20,7 @@ export default function Home() {
     }
   
   }, [router]);
+
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white">
@@ -127,6 +129,6 @@ export default function Home() {
       </section>
       
       <Footer />
-    </main>
+    </main>    
   );
 }

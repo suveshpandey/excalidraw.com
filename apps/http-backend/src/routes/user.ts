@@ -2,8 +2,13 @@ import express, { Router } from "express";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 
+import { OAuth2Client } from 'google-auth-library';
+
 import dotenv from "dotenv";
 dotenv.config();
+
+// Initialize Google OAuth client
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 import { JWT_SECRET } from "@repo/backend-common/config";
 import { CreateUserSchema, SigninUserSchema, CreateRoomSchema } from "@repo/common";
@@ -87,6 +92,13 @@ userRouter.post("/signin", async (req, res) => {
             res.status(404).json({
                 message: "Wrong email!"
             })
+            return;
+        }
+
+        if (user.password === "") {
+            res.status(403).json({
+                message: "Please sign in with Google"
+            });
             return;
         }
 
@@ -276,5 +288,64 @@ userRouter.delete("/delete-last-chat/:roomId", authenticate, async (req, res) =>
     }
 
 })
+
+userRouter.post("/auth/google", async (req, res) => {
+    try {
+        const { token } = req.body;
+        
+        // Verify Google token
+        const ticket = await googleClient.verifyIdToken({
+            idToken: token,
+            audience: process.env.GOOGLE_CLIENT_ID
+        });
+        
+        const payload = ticket.getPayload();
+        
+        if (!payload?.email) {
+            res.status(403).json({ message: "Invalid Google token" });
+            return;
+        }
+
+        const email = payload.email;
+        const name = payload.name || email.split('@')[0];
+        
+        // Check if user exists
+        let user = await prismaClient.user.findUnique({ 
+            where: { email } 
+        });
+        
+        if (!user) {
+            // Create new user if doesn't exist
+            user = await prismaClient.user.create({
+                data: {
+                    email,
+                    password: "", // Empty password for Google users
+                    username: name || "user",
+                }
+            });
+        }
+        
+        // Generate JWT token (same as your current implementation)
+        const jwtToken = jwt.sign({
+            userId: user.id
+        }, JWT_SECRET);
+
+        res.status(200).json({
+            message: "Google authentication successful",
+            userData: {
+                email: user.email,
+                username: user.username
+            },
+            token: jwtToken
+        });
+        
+    } catch (error) {
+        console.error("Google auth error:", error);
+        res.status(500).json({ 
+            message: "Google authentication failed",
+            error: error 
+        });
+    }
+});
 
 export default userRouter

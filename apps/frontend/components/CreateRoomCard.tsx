@@ -57,7 +57,7 @@ const CreateRoomCard: React.FC<CreateRoomCardProps> = ({
             <button
               type="submit"
               disabled={loading || !roomName.trim()}
-              className="w-full relative overflow-hidden group py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300 text-white font-medium flex items-center justify-center"
+              className="w-full relative overflow-hidden group py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300 text-white font-medium flex items-center justify-center cursor-pointer"
             >
               <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-blue-400/0 via-blue-400/10 to-blue-400/0 group-hover:via-blue-400/20 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-all duration-1000"></span>
               <span className="flex items-center gap-2">
