@@ -269,7 +269,7 @@ function App() {
                   </div>
                   <div>
                     <p className="text-blue-100/60 text-sm">Recent Activity</p>
-                    <p className="text-2xl font-semibold">{lastActiveTime}</p>
+                    <p className="text-2xl font-semibold">{lastActiveTime || "_ _"}</p>
                   </div>
                 </div>
                 <div className="bg-white/5 backdrop-blur-md rounded-xl p-5 border border-white/10 flex items-center">

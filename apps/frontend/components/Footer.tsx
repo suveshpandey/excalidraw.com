@@ -17,7 +17,7 @@ export function Footer() {
               </span>
             </div>
             <p className="text-blue-100/80 text-sm mb-4">
-              The collaborative whiteboard tool that brings your team's ideas to life in real-time.
+              The collaborative canvas tool that brings your team's ideas to life in real-time.
             </p>
             <div className="flex space-x-4">
               <Link href="#" className="text-blue-100/60 hover:text-blue-300 transition-colors">

@@ -48,7 +48,7 @@ export default function Home() {
             Why Choose Excaliboard?
           </h2>
           <p className="text-lg text-blue-100/80 max-w-2xl mx-auto">
-            The perfect whiteboard tool for teams and individuals to bring ideas to life
+            The perfect collaboration canvas tool for teams and individuals to bring ideas to life
           </p>
         </div>
         
@@ -96,7 +96,7 @@ export default function Home() {
               <p className="text-blue-100/80 mb-6">
                 No more emailing files back and forth or waiting for someone to finish their part. With Excaliboard, everyone can contribute simultaneously, making teamwork efficient and enjoyable.
               </p>
-              <ul className="space-y-3 mb-8">
+              {/* <ul className="space-y-3 mb-8">
                 {["Create and share boards instantly", "Leave comments and feedback", "Export in multiple formats", "Access history and revisions"].map((item, index) => (
                   <li key={index} className="flex items-start">
                     <div className="flex-shrink-0 h-6 w-6 rounded-full bg-blue-600/20 flex items-center justify-center mr-3">
@@ -108,7 +108,7 @@ export default function Home() {
               </ul>
               <Button asChild className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-lg font-medium transition-all">
                 <Link href="/auth">Try It For Free</Link>
-              </Button>
+              </Button> */}
             </div>
           </div>
         </div>
@@ -120,7 +120,7 @@ export default function Home() {
             Ready to Transform Your Ideas?
           </h2>
           <p className="text-xl text-blue-100/80 mb-8">
-            Join thousands of teams who use Excaliboard to collaborate and create amazing things together.
+            Use Excaliboard to collaborate and create amazing things together.
           </p>
           <Button asChild className="bg-blue-600 hover:bg-blue-500 text-white px-8 py-6 rounded-lg text-lg font-medium transition-all transform hover:scale-105">
             <Link href="/auth">Get Started Now</Link>
