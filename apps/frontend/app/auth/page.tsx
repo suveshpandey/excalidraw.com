@@ -7,6 +7,7 @@ import Loader from '@/components/Loader';
 import { MousePointerSquareDashed } from 'lucide-react';
 
 import { signIn, useSession } from 'next-auth/react';
+import { HTTP_BACKEND } from '@/config';
 
 export default function AuthPage() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -28,7 +29,7 @@ export default function AuthPage() {
       setLoading(true);
       if (isSignUp) {
         // Signup logic
-        const response = await axios.post('http://localhost:8080/api/v1/user/signup', {
+        const response = await axios.post(`${HTTP_BACKEND}/signup`, {
           email,
           password,
           username
@@ -43,7 +44,7 @@ export default function AuthPage() {
         }
       } else {
         // Signin logic
-        const response = await axios.post('http://localhost:8080/api/v1/user/signin', {
+        const response = await axios.post(`${HTTP_BACKEND}/signin`, {
           email,
           password
         });

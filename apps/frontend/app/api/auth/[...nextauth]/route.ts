@@ -2,6 +2,7 @@ import NextAuth from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 
 import dotenv from 'dotenv';
+import { HTTP_BACKEND } from '@/config';
 dotenv.config();
 
 export const authOptions = {
@@ -15,7 +16,7 @@ export const authOptions = {
     async jwt({ token, account }: any) {
       if (account?.provider === "google" && account?.id_token) {
         try {
-          const response = await fetch('http://localhost:8080/api/v1/user/auth/google', {
+          const response = await fetch(`${HTTP_BACKEND}/auth/google`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
