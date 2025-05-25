@@ -9,7 +9,8 @@
     "check-types": "turbo run check-types",
     "db:dev": "pnpm run dev --filter @repo/db",
     "db:migrate": "pnpm run migrate --filter @repo/db",
-    "db:studio": "pnpm run studio --filter @repo/db"
+    "db:studio": "pnpm run studio --filter @repo/db",
+    "postinstall": "pnpm --filter @repo/db exec prisma generate"
   },
   "devDependencies": {
     "prettier": "^3.5.3",

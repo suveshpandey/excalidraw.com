@@ -7,7 +7,8 @@ import * as jwt from "jsonwebtoken";
 dotenv.config();
 
 const JWT_SECRET  = process.env.JWT_SECRET || "";
-import { prismaClient } from "@repo/db/client";
+// import { prismaClient } from "@repo/db/client";
+import { prismaClient } from "../../../packages/db/src/database";
 
 const PORT = Number(process.env.PORT) || 8081;  // Convert to number
 const wss = new WebSocketServer({ port: PORT });

@@ -1,8 +1,20 @@
+// {
+//   // "extends": "../../packages/typescript-config/base.json",
+//   "extends": "../../packages/typescript-config/base.json",
+//   "compilerOptions": {
+//     "rootDir": "./src",
+//     "outDir": "./dist"
+//   }
+// }
+
 {
-  // "extends": "../../packages/typescript-config/base.json",
-  "extends": "../../packages/typescript-config/base.json",
+  "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
-    "rootDir": "./src",
-    "outDir": "./dist"
-  }
+    "baseUrl": ".", 
+    "paths": {
+      "@repo/db/*": ["../../packages/db/src/*"]
+    },
+    "outDir": "dist"
+  },
+  "include": ["src"]
 }
