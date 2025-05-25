@@ -1,10 +1,12 @@
 import { WebSocket, WebSocketServer } from 'ws';
-import jwt from 'jsonwebtoken';
 
-import dotenv from "dotenv";
+// import jwt from 'jsonwebtoken';
+// import dotenv from "dotenv";
+import * as dotenv from "dotenv";
+import * as jwt from "jsonwebtoken";
 dotenv.config();
 
-import { JWT_SECRET } from "@repo/backend-common/config";
+const JWT_SECRET  = process.env.JWT_SECRET || "";
 import { prismaClient } from "@repo/db/client";
 
 const PORT = Number(process.env.PORT) || 8081;  // Convert to number
