@@ -1,3 +1,5 @@
+console.log('WebSocket server starting...');
+
 import { WebSocket, WebSocketServer } from 'ws';
 
 // import jwt from 'jsonwebtoken';
