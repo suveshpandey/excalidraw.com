@@ -1,111 +1,210 @@
-console.log('WebSocket server starting...');
+// console.log('WebSocket server starting...');
 
-import { WebSocket, WebSocketServer } from 'ws';
+// import { WebSocket, WebSocketServer } from 'ws';
 
-// import jwt from 'jsonwebtoken';
-// import dotenv from "dotenv";
-import * as dotenv from "dotenv";
-import * as jwt from "jsonwebtoken";
-dotenv.config();
+// // import jwt from 'jsonwebtoken';
+// // import dotenv from "dotenv";
+// import * as dotenv from "dotenv";
+// import * as jwt from "jsonwebtoken";
+// dotenv.config();
 
-const JWT_SECRET  = process.env.JWT_SECRET || "";
-// import { prismaClient } from "@repo/db/client";
-import { prismaClient } from "../../../packages/db/src/database";
+// const JWT_SECRET  = process.env.JWT_SECRET || "";
+// // import { prismaClient } from "@repo/db/client";
+// import { prismaClient } from "../../../packages/db/src/database";
 
-const PORT = Number(process.env.PORT) || 8081;  // Convert to number
-const wss = new WebSocketServer({ port: PORT });
-
-
-interface User {
-    ws: WebSocket,
-    rooms: string[],
-    userId: string
-}
-const users: User[]  = []
+// const PORT = Number(process.env.PORT) || 8081;  // Convert to number
+// const wss = new WebSocketServer({ port: PORT });
 
 
-//check if the user is authenticated or not
-const checkUser = (token: string): string | null => {
-    try{
-        const decoded = jwt.verify(token, JWT_SECRET);
+// interface User {
+//     ws: WebSocket,
+//     rooms: string[],
+//     userId: string
+// }
+// const users: User[]  = []
 
-        if(typeof decoded == "string") return null;
 
-        if(!decoded || !decoded.userId) return null;
+// //check if the user is authenticated or not
+// const checkUser = (token: string): string | null => {
+//     try{
+//         const decoded = jwt.verify(token, JWT_SECRET);
 
-        return decoded.userId;
-    }   
-    catch(error){
-        return null;
-    }
-}
+//         if(typeof decoded == "string") return null;
 
-wss.on('connection', function connection(ws, request) {
-    const url = request.url;
-    if(!url) return;
+//         if(!decoded || !decoded.userId) return null;
 
-    const queryParams = new URLSearchParams(url.split('?')[1]);
-    const token = queryParams.get('token') || "";
-    const userId = checkUser(token);
+//         return decoded.userId;
+//     }   
+//     catch(error){
+//         return null;
+//     }
+// }
 
-    if(userId == null){
-        ws.close();
-        return null;
-    }
+// wss.on('connection', function connection(ws, request) {
+//     const url = request.url;
+//     if(!url) return;
+
+//     const queryParams = new URLSearchParams(url.split('?')[1]);
+//     const token = queryParams.get('token') || "";
+//     const userId = checkUser(token);
+
+//     if(userId == null){
+//         ws.close();
+//         return null;
+//     }
     
-    users.push({
-        ws,
-        rooms: [],
-        userId
-    })
+//     users.push({
+//         ws,
+//         rooms: [],
+//         userId
+//     })
 
-    ws.on('message', async function message(data) {
-        try{
-            //@ts-ignore
-            let parsedData;
-            if(typeof data !== "string"){
-                parsedData = JSON.parse(data.toString());
-            }
-            else{
-                parsedData = JSON.parse(data); //{type: "join-room", roomId: 1}
-            }
+//     ws.on('message', async function message(data) {
+//         try{
+//             //@ts-ignore
+//             let parsedData;
+//             if(typeof data !== "string"){
+//                 parsedData = JSON.parse(data.toString());
+//             }
+//             else{
+//                 parsedData = JSON.parse(data); //{type: "join-room", roomId: 1}
+//             }
 
         
-            if(parsedData.type == "join_room") {
-                const user = users.find(x => x.ws === ws);
-                user?.rooms.push(parsedData.roomId);
-            }
-            if(parsedData.type == "leave_room") {
-                const user = users.find(x => x.ws === ws);
-                if(!user) return;
+//             if(parsedData.type == "join_room") {
+//                 const user = users.find(x => x.ws === ws);
+//                 user?.rooms.push(parsedData.roomId);
+//             }
+//             if(parsedData.type == "leave_room") {
+//                 const user = users.find(x => x.ws === ws);
+//                 if(!user) return;
                 
-                user.rooms = user?.rooms.filter(x => x === parsedData.room);
-            }
-            if(parsedData.type == "chat") {
-                const roomId = parsedData.roomId;
-                const message = parsedData.message
+//                 user.rooms = user?.rooms.filter(x => x === parsedData.room);
+//             }
+//             if(parsedData.type == "chat") {
+//                 const roomId = parsedData.roomId;
+//                 const message = parsedData.message
                 
-                await prismaClient.chat.create({
-                    data: {
-                        roomId: Number(roomId),
-                        message: message,
-                        userId: userId
-                    }
-                })
+//                 await prismaClient.chat.create({
+//                     data: {
+//                         roomId: Number(roomId),
+//                         message: message,
+//                         userId: userId
+//                     }
+//                 })
 
-                users.forEach(user => {
-                    if(user.rooms.includes(roomId)) {
-                        user.ws.send(JSON.stringify({
-                            type: "chat",
-                            message: message,
-                            roomId: roomId
-                        }))
-                    }
-                })
-            }
-        }
-        catch(error){
-            ws.close();
-        }
-    });
+//                 users.forEach(user => {
+//                     if(user.rooms.includes(roomId)) {
+//                         user.ws.send(JSON.stringify({
+//                             type: "chat",
+//                             message: message,
+//                             roomId: roomId
+//                         }))
+//                     }
+//                 })
+//             }
+//         }
+//         catch(error){
+//             ws.close();
+//         }
+//     });
+// });
+
+import { WebSocketServer } from 'ws';
+import * as dotenv from "dotenv";
+import * as jwt from "jsonwebtoken";
+import { prismaClient } from "../../../packages/db/src/database";
+
+dotenv.config();
+
+// Enhanced configuration
+const PORT = Number(process.env.PORT) || 8081;
+const JWT_SECRET = process.env.JWT_SECRET || "";
+const DATABASE_URL = process.env.DATABASE_URL || "";
+
+console.log(`Starting WebSocket server on port ${PORT}`);
+console.log(`Database URL: ${DATABASE_URL ? 'Configured' : 'MISSING'}`);
+
+// Verify database connection immediately
+prismaClient.$connect()
+  .then(() => console.log('Database connected successfully'))
+  .catch(err => {
+    console.error('Database connection failed:', err);
+    process.exit(1);
+  });
+
+const wss = new WebSocketServer({ port: PORT });
+
+wss.on('connection', (ws, req) => {
+  console.log(`New connection from ${req.socket.remoteAddress}`);
+  
+  const token = new URL(req.url || '', `http://${req.headers.host}`).searchParams.get('token') || "";
+  const userId = verifyToken(token);
+
+  if (!userId) {
+    console.log('Connection rejected - invalid token');
+    ws.close();
+    return;
+  }
+
+  console.log(`Authenticated user ${userId} connected`);
+  
+  ws.on('message', async (data) => {
+    try {
+      const message = data.toString();
+      console.log(`Received from ${userId}:`, message);
+      
+      const parsed = JSON.parse(message);
+      
+      if (parsed.type === "join_room") {
+        console.log(`User ${userId} joining room ${parsed.roomId}`);
+        // Add room joining logic
+      }
+      else if (parsed.type === "chat") {
+        console.log(`Saving chat message in room ${parsed.roomId}`);
+        await prismaClient.chat.create({
+          data: {
+            roomId: Number(parsed.roomId),
+            message: parsed.message,
+            userId: userId
+          }
+        });
+        console.log('Message saved successfully');
+        
+        // Broadcast to other users in room
+        wss.clients.forEach(client => {
+          if (client !== ws && client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({
+              type: "chat",
+              message: parsed.message,
+              roomId: parsed.roomId,
+              userId: userId
+            }));
+          }
+        });
+      }
+    } catch (err) {
+      console.error('Message handling error:', err);
+    }
+  });
+
+  ws.on('close', () => {
+    console.log(`User ${userId} disconnected`);
+  });
+
+  ws.on('error', (err) => {
+    console.error(`WebSocket error for user ${userId}:`, err);
+  });
 });
+
+function verifyToken(token: string): string | null {
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    return decoded.userId;
+  } catch (err) {
+    console.error('Token verification failed:', err);
+    return null;
+  }
+}
+
+console.log(`WebSocket server running on ws://localhost:${PORT}`);
