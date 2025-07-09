@@ -2,13 +2,14 @@
 
 import { useRef, useState } from "react";
 import { useEffect } from "react";
-import { Square, Circle, Minus, ArrowUpRight, Type, Undo2 } from 'lucide-react';
+import { Square, Circle, Minus, ArrowUpRight, Undo2, Trash2Icon, PencilIcon, LetterText, Diamond, } from 'lucide-react';
 import { Game } from "@/draw/game";
 import axios from "axios";
 import { HTTP_BACKEND } from "@/config";
 import { getExistingShapes } from "@/draw/http";
+import { Rhodium_Libre } from "next/font/google";
 
-export type Tool = "rect" | "circle" | "line" | "arrow" | "text";
+export type Tool = "rect" | "rhombus" | "circle" | "line" | "arrow" | "text" | "pencil";
 
 export default function Canvas({ 
     roomId,
@@ -50,11 +51,12 @@ export default function Canvas({
                 type="text" 
                 ref={inputRef}  
                 placeholder="Type here..."
-                className="absolute text-slate-100 px-3 py-2 rounded-lg shadow-lg border-b border-slate-600 outline-none " 
+                className="absolute text-slate-100 outline-none " 
                 style={{ 
                     display: "none", 
                     zIndex: 1000,
                     fontSize: "16px",
+                    font: "Arial",
                     minWidth: "200px"
                 }} 
             />
@@ -102,6 +104,21 @@ function Topbar({
             console.error("Server error:", error);
         }
     };
+    const handleDeleteAllShapes = async () => {
+        try {
+            const response = await axios.delete(`${HTTP_BACKEND}/delete-all-chat/${roomId}`, {
+                headers: {
+                    authorization: token
+                },
+            });
+            if(response.status === 200 && game) {
+                game.existingShapes = await getExistingShapes(roomId);
+                game.clearCanvas();
+            }
+        } catch (error) {
+            console.error("Server error:", error);
+        }
+    };
 
     return (
         <div className="w-full flex justify-center fixed top-2 px-2">
@@ -109,38 +126,52 @@ function Topbar({
                 <div className="flex items-center gap-2">
                     <button 
                         onClick={() => setSelectedTool("rect")} 
-                        className={`p-2 rounded-lg transition-all ${selectedTool === "rect" ? "bg-slate-600/70 text-green-300 shadow-md" : "text-slate-300 hover:bg-slate-600"}`}
+                        className={`p-2 rounded-lg transition-all cursor-pointer ${selectedTool === "rect" ? "bg-slate-600/70 text-green-300 shadow-md" : "text-slate-300 hover:bg-slate-600"}`}
                         aria-label="Rectangle tool"
                     >
                         <Square size={20} strokeWidth={1.75} />
                     </button>
                     <button 
+                        onClick={() => setSelectedTool("rhombus")} 
+                        className={`p-2 rounded-lg transition-all cursor-pointer ${selectedTool === "rhombus" ? "bg-slate-600/70 text-green-300 shadow-md" : "text-slate-300 hover:bg-slate-600"}`}
+                        aria-label="Rhombus tool"
+                    >
+                        <Diamond size={20} strokeWidth={1.75} />
+                    </button>
+                    <button 
                         onClick={() => setSelectedTool("circle")} 
-                        className={`p-2 rounded-lg transition-all ${selectedTool === "circle" ? "bg-slate-600/70 text-green-300 shadow-md" : "text-slate-300 hover:bg-slate-600"}`}
+                        className={`p-2 rounded-lg transition-all cursor-pointer ${selectedTool === "circle" ? "bg-slate-600/70 text-green-300 shadow-md" : "text-slate-300 hover:bg-slate-600"}`}
                         aria-label="Circle tool"
                     >
                         <Circle size={20} strokeWidth={1.75} />
                     </button>
                     <button 
                         onClick={() => setSelectedTool("arrow")} 
-                        className={`p-2 rounded-lg transition-all ${selectedTool === "arrow" ? "bg-slate-600/70 text-green-300 shadow-md" : "text-slate-300 hover:bg-slate-600"}`}
+                        className={`p-2 rounded-lg transition-all cursor-pointer ${selectedTool === "arrow" ? "bg-slate-600/70 text-green-300 shadow-md" : "text-slate-300 hover:bg-slate-600"}`}
                         aria-label="Arrow tool"
                     >
                         <ArrowUpRight size={20} strokeWidth={1.75} />
                     </button>
                     <button 
                         onClick={() => setSelectedTool("line")} 
-                        className={`p-2 rounded-lg transition-all ${selectedTool === "line" ? "bg-slate-600/70 text-green-300 shadow-md" : "text-slate-300 hover:bg-slate-600"}`}
+                        className={`p-2 rounded-lg transition-all cursor-pointer ${selectedTool === "line" ? "bg-slate-600/70 text-green-300 shadow-md" : "text-slate-300 hover:bg-slate-600"}`}
                         aria-label="Line tool"
                     >
                         <Minus size={20} strokeWidth={1.75} />
                     </button>
                     <button 
+                        onClick={() => setSelectedTool("pencil")} 
+                        className={`p-2 rounded-lg transition-all cursor-pointer ${selectedTool === "pencil" ? "bg-slate-600/70 text-green-300 shadow-md" : "text-slate-300 hover:bg-slate-600"}`}
+                        aria-label="Pencil tool"
+                    >
+                        <PencilIcon size={20} strokeWidth={1.75} />
+                    </button>
+                    <button 
                         onClick={() => setSelectedTool("text")} 
-                        className={`p-2 rounded-lg transition-all ${selectedTool === "text" ? "bg-slate-600/70 text-green-300 shadow-md" : "text-slate-300 hover:bg-slate-600"}`}
+                        className={`p-2 rounded-lg transition-all cursor-pointer ${selectedTool === "text" ? "bg-slate-600/70 text-green-300 shadow-md" : "text-slate-300 hover:bg-slate-600"}`}
                         aria-label="Text tool"
                     >
-                        <Type size={20} strokeWidth={1.75} />
+                        <LetterText size={20} strokeWidth={1.75} />
                     </button>
                 </div>
                 
@@ -148,10 +179,17 @@ function Topbar({
                 
                 <button 
                     onClick={handleDeleteShape}
-                    className="p-2 text-slate-300 hover:text-white hover:bg-slate-600 active:bg-slate-500 rounded-lg transition-all"
+                    className="p-2 cursor-pointer text-slate-300 hover:text-white hover:bg-slate-600 active:bg-slate-500 rounded-lg transition-all"
                     aria-label="Undo last action"
                 >
                     <Undo2 size={20} strokeWidth={1.75} />
+                </button>
+                <button 
+                    onClick={handleDeleteAllShapes}
+                    className="p-2 cursor-pointer text-slate-300 hover:text-white hover:bg-slate-600 active:bg-slate-500 rounded-lg transition-all"
+                    aria-label="Undo last action"
+                >
+                    <Trash2Icon size={20} strokeWidth={1.75} />
                 </button>
             </div>
         </div>

@@ -269,7 +269,7 @@ userRouter.delete("/delete-last-chat/:roomId", authenticate, async (req, res) =>
             return
         }
         
-        //Delete the ladt chat
+        //Delete the last chat
         await prismaClient.chat.delete({
             where: {
                 id: lastChat.id
@@ -279,6 +279,37 @@ userRouter.delete("/delete-last-chat/:roomId", authenticate, async (req, res) =>
         res.status(200).json({
             message: "Last chat deleted successfully.",
             deletedChat: lastChat
+        })
+    }
+    catch (error) {
+        console.error("Error deleting last chat:", error);
+        res.status(500).json({ message: "Internal server error." });
+    }
+
+})
+
+userRouter.delete("/delete-all-chat/:roomId", authenticate, async (req, res) => {
+    try {
+        //@ts-ignore
+        const userId = req.userId;
+        const roomId = req.params.roomId;
+
+        if(!roomId) {
+            res.status(403).json({
+                message: "roomId is not provided"
+            })
+            return;
+        }
+
+        await prismaClient.chat.deleteMany({
+            where: {
+                userId: userId,
+                roomId: Number(roomId)
+            }
+        })
+
+        res.status(200).json({
+            message: "All chats deleted successfully."
         })
     }
     catch (error) {

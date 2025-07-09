@@ -6,7 +6,15 @@ type Shape = {
     x: number,
     y: number,
     width: number,
-    height: number
+    height: number,
+    border_radius: number 
+} | {
+    type: "rhombus",
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    border_radius: number 
 } | {
     type: "circle",
     centerX: number,
@@ -25,10 +33,18 @@ type Shape = {
     "endX": number,
     "endY": number
 } | {
+    type: "pencil",
+    points: {x: number, y: number} [] // array of all points mouse moved through
+} | {
     type: "text",
     x: number,
     y: number,
     value: string
+}
+
+interface Point {
+    x: number,
+    y: number
 }
 
 export class Game {
@@ -39,6 +55,7 @@ export class Game {
     private clicked: boolean;
     private startX: number;
     private startY: number;
+    private points: Point[]
     private textInput: HTMLInputElement;
     private selectedTool: Tool;
 
@@ -53,6 +70,7 @@ export class Game {
         this.clicked = false;
         this.startX = 0;
         this.startY = 0;
+        this.points = [];
         this.textInput = textInput
         this.selectedTool = "rect";
 
@@ -69,7 +87,7 @@ export class Game {
         this.canvas.removeEventListener("mousemove", this.mouseMoveHandler);
     }
 
-    setTool(tool: "rect" | "circle" | "line" | "arrow" | "text") {
+    setTool(tool: "rect" | "rhombus" | "circle" | "line" | "arrow" | "text" | "pencil") {
         this.selectedTool = tool;
     }
 
@@ -100,11 +118,33 @@ export class Game {
         this.existingShapes.map((shape) => {
             if(shape.type === "rect"){
                 this.ctx.strokeStyle = "rgba(255, 255, 255)";
-                this.ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);
+                this.ctx.beginPath();
+                this.ctx.roundRect(shape.x, shape.y, shape.width, shape.height, [10]);
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke();
             }
+            else if(shape.type === "rhombus") {
+                const centerX = shape.x + shape.width / 2;
+                const centerY = shape.y + shape.height / 2;
+
+                this.ctx.save();
+                // 1. Move origin to center of the shape (or wherever you want to rotate around)
+                this.ctx.translate(centerX, centerY);
+
+                // 2. Rotate the canvas 45 degrees (in radians)
+                this.ctx.rotate((45 * Math.PI) / 180);
+
+                // 3. Draw the rounded rectangle centered at (0, 0)
+                this.ctx.roundRect(-shape.height / 2, -shape.height / 2, shape.height, shape.height, [10]);
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke(); // Or fill()
+                this.ctx.restore(); // Restore canvas to original state
+            }
+            
             else if (shape.type === "circle") {
                 this.ctx.beginPath();
                 this.ctx.arc(shape.centerX, shape.centerY, Math.abs(shape.radius), 0, Math.PI * 2);
+                this.ctx.lineWidth = 2;
                 this.ctx.stroke();
                 this.ctx.closePath();
             }
@@ -112,14 +152,19 @@ export class Game {
                 this.ctx.beginPath();
                 this.ctx.moveTo(shape.startX, shape.startY);
                 this.ctx.lineTo(shape.endX, shape.endY);
+                this.ctx.lineWidth = 2;
                 this.ctx.stroke();
                 this.ctx.closePath();
             }
             else if(shape.type === "arrow") {
                 this.drawArrow(shape.startX, shape.startY, shape.endX, shape.endY);
+                this.ctx.lineWidth = 2;
+            }
+            else if(shape.type === "pencil") {
+                this.drawSmoothPath(shape.points);
             }
             else if(shape.type === "text") {
-                this.ctx.font = "20px Arial";
+                this.ctx.font = "18px Arial";
                 this.ctx.fillStyle = "#94a3b8";
                 this.ctx.fillText(shape.value, shape.x, shape.y);
             }
@@ -131,20 +176,26 @@ export class Game {
         this.startX = e.clientX;
         this.startY = e.clientY;
 
+        this.points = [{x: e.offsetX, y: e.offsetY}];
+
         if(this.selectedTool === "text") {
             const input = this.textInput;
             input.style.display = "block";
-            input.style.position = "fixed";
+            input.style.position = "absolute";
             input.style.left = `${e.clientX}px`;
-            input.style.top = `${e.clientY}px`;
+            input.style.top = `${e.clientY - 10}px`;
+            
             input.value = "";
-            input.focus();
+            setTimeout(() => {
+                input.focus();
+            }, 0);
 
             input.onkeydown = (event) => {
                 if(event.key === "Enter") {
                     event.preventDefault();
                     const value = input.value;
                     input.style.display = "none";
+                    input.style.fontFamily = "Arial"
 
                     const shape: Shape = {
                         type: "text",
@@ -190,7 +241,8 @@ export class Game {
                 x: this.startX,
                 y: this.startY,
                 width: width,
-                height: height
+                height: height,
+                border_radius: 10
             };
         }
         else if (selectedTool === "circle") {
@@ -220,6 +272,22 @@ export class Game {
                 endY: e.clientY
             }
         }
+        else if(selectedTool === "pencil") {
+            shape = {
+                type: "pencil",
+                points: [...this.points]
+            }
+        }
+        else if(selectedTool === "rhombus") {
+            shape = {
+                type: "rhombus",
+                x: this.startX,
+                y: this.startY,
+                width: width,
+                height: height,
+                border_radius: 10
+            };
+        }
 
         if(shape == null) return;
 
@@ -247,7 +315,12 @@ export class Game {
             //@ts-ignore
             const selectedTool = this.selectedTool;
             if (selectedTool === "rect") {
-                this.ctx.strokeRect(this.startX, this.startY, width, height);
+                // this.ctx.strokeRect(this.startX, this.startY, width, height);
+                
+                this.ctx.beginPath();
+                this.ctx.roundRect(this.startX, this.startY, width, height, [10]);
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke();
             }
             else if (selectedTool === "circle") {
                 const radius = Math.max(width, height) / 2;
@@ -256,17 +329,45 @@ export class Game {
                 
                 this.ctx.beginPath();
                 this.ctx.arc(centerX, centerY, Math.abs(radius), 0, Math.PI * 2);
+                this.ctx.lineWidth = 2;
                 this.ctx.stroke();
                 this.ctx.closePath();
             }
-            else if(selectedTool == "line") {
+            else if(selectedTool === "line") {
                 this.ctx.beginPath();
                 this.ctx.moveTo(this.startX, this.startY);
                 this.ctx.lineTo(endX, endY);
+                this.ctx.lineWidth = 2;
                 this.ctx.stroke();
             }
             else if(selectedTool === "arrow") {
                 this.drawArrow(this.startX, this.startY, endX, endY);
+                this.ctx.lineWidth = 2;
+            }
+            else if(selectedTool === "pencil") {
+                const point = {x: e.offsetX, y: e.offsetY};
+                this.points.push(point);
+                this.drawSmoothPath(this.points);
+            }
+            else if(selectedTool === "rhombus") {
+                this.ctx.beginPath();
+                this.ctx.lineWidth = 1.5;
+                this.ctx.stroke();
+                this.ctx.save(); // Save current canvas state
+                
+                const centerX = (this.startX + endX) / 2;
+                const centerY = (this.startY + endY) / 2;
+                // 1. Move origin to center of the shape (or wherever you want to rotate around)
+                this.ctx.translate(centerX, centerY);
+
+                // 2. Rotate the canvas 45 degrees (in radians)
+                this.ctx.rotate((45 * Math.PI) / 180);
+
+                // 3. Draw the rounded rectangle centered at (0, 0)
+                this.ctx.roundRect(-height / 2, -height / 2, height, height, [10]);
+                this.ctx.lineWidth = 2;
+                this.ctx.stroke(); // Or fill()
+                this.ctx.restore(); // Restore canvas to original state
             }
         }
     }
@@ -279,25 +380,20 @@ export class Game {
         this.canvas.addEventListener("mousemove", this.mouseMoveHandler);
     }
 
-    drawArrow(fromX: number, fromY: number, toX: number, toY: number) {
-        const headLength = 10;
-        const angle = Math.atan2(toY - fromY, toX - fromX);
-
-        //Draw line
+    drawArrow(fromx: number, fromy: number, tox: number, toy: number) {
+        const dx = tox - fromx;
+        const dy = toy - fromy;
+        const headlen = 12; // length of head in pixels
+        const angle = Math.atan2( dy, dx );
         this.ctx.beginPath();
-        this.ctx.moveTo(fromX, fromY);
-        this.ctx.lineTo(toX, toY);
+        this.ctx.moveTo( fromx, fromy );
+        this.ctx.lineTo( tox, toy );
         this.ctx.stroke();
-
-        //Draw arrowhead
         this.ctx.beginPath();
-        this.ctx.moveTo(toX, toY);
-        this.ctx.lineTo(toX - headLength * Math.cos(angle - Math.PI / 6), toY - headLength * Math.sin(angle - Math.PI / 6));
-        this.ctx.lineTo(toX - headLength * Math.cos(angle + Math.PI / 6), toY - headLength * Math.sin(angle + Math.PI / 6));
-        this.ctx.lineTo(toX, toY);
-        this.ctx.lineTo(toX - headLength * Math.cos(angle - Math.PI / 6), toY - headLength * Math.sin(angle - Math.PI / 6));
+        this.ctx.moveTo( tox - headlen * Math.cos( angle - Math.PI / 6 ), toy - headlen * Math.sin( angle - Math.PI / 6 ) );
+        this.ctx.lineTo( tox, toy );
+        this.ctx.lineTo( tox - headlen * Math.cos( angle + Math.PI / 6 ), toy - headlen * Math.sin( angle + Math.PI / 6 ) );
         this.ctx.stroke();
-        this.ctx.closePath();
     }
 
     removeLastShape(){
@@ -305,5 +401,19 @@ export class Game {
             this.existingShapes.pop(); //Removes ladt shape
             this.clearCanvas(); //Redraw canvas
         }
+    }
+
+    drawSmoothPath = (points: Point[]) => {
+        this.ctx.beginPath();
+        this.ctx.moveTo(points[0].x, points[0].y);
+
+        for (let i = 1; i < points.length - 1; i++) {
+            const midX = (points[i].x + points[i + 1].x) / 2;
+            const midY = (points[i].y + points[i + 1].y) / 2;
+            this.ctx.quadraticCurveTo(points[i].x, points[i].y, midX, midY);
+            this.ctx.lineWidth = 2;
+        }
+
+        this.ctx.stroke();
     }
 }
