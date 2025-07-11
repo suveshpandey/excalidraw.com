@@ -65,7 +65,8 @@ function App() {
         }
         catch(error) {
             setLoading(false);
-            setError("Server Error !");   
+            console.log(error)
+            setError(`A room with the name "${roomSlag}" already exists. Please choose a different name.`);   
         }
         finally {
           setLoading(false);
