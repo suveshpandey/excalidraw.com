@@ -82,28 +82,31 @@ function App() {
         // Clear local storage (your JWT system)
         localStorage.clear();
         
-        // Redirect to home page
-        router.push('/');
-        
         // Optional: Force a full page reload to clear any residual state
         window.location.href = '/';
       } catch (error) {
         console.error('Logout error:', error);
-        // Fallback to basic logout if NextAuth fails
         localStorage.clear();
         router.push('/');
       }
     };
 
     const fetchRooms = async () => {
+      try{
         const token = localStorage.getItem("token");
+        if(!token) return;
+
         const response = await axios.get(`${HTTP_BACKEND}/get-rooms`, {
             headers: {
                 authorization: token
             }
         });
-        setRooms(response.data.rooms)
+        setRooms(response.data.rooms || []);
         console.log("rooms: ", response.data.rooms);
+      }
+      catch(error) {
+        console.log("Failed to fetch rooms: ", error);
+      }
     };
 
     const joinRoom = (currentRoomId: number) => {
@@ -156,68 +159,105 @@ function App() {
     };
 
     useEffect(() => {
-        const initializeDashboard = async () => {
-            try {
-                // Check if we have a NextAuth session but no JWT
-                //@ts-ignore
-                if (session?.backendToken && !localStorage.getItem('token')) {
-                    //@ts-ignore
-                    localStorage.setItem('token', session.backendToken);
-                    //@ts-ignore
-                    localStorage.setItem('username', session.userData.username);
-                }
-                
-                // If no auth at all, redirect to login
-                //@ts-ignore
-                if (!localStorage.getItem('token') && !session?.backendToken) {
-                    router.push('/');
-                    return;
-                }
+      const init = async () => {
+        try {
+          //@ts-ignore
+          if (session?.backendToken && !localStorage.getItem("token")) {
+            //@ts-ignore
+            localStorage.setItem("token", session.backendToken);
+            //@ts-ignore
+            localStorage.setItem("username", session.userData.username);
+          }
 
-                // Fetch all required data
-                const storedUsername = localStorage.getItem("username");
-                setUsername(storedUsername);
-                greetingsTime();
-                await fetchRooms();
+          const token = localStorage.getItem("token");
+          //@ts-ignore
+          if (!token && !session?.backendToken) {
+            router.push("/");
+            return;
+          }
+
+          greetingsTime();
+          updateLastActiveTime();
+
+          const storedUsername = localStorage.getItem("username");
+          setUsername(storedUsername);
+
+          await fetchRooms();
+        } catch (err) {
+          console.error("Dashboard init error:", err);
+          router.push("/");
+        } finally {
+          setIsInitializing(false);
+        }
+      };
+
+      init();
+    }, [session, router]);
+
+
+    // useEffect(() => {
+    //     const initializeDashboard = async () => {
+    //         try {
+    //             // Check if we have a NextAuth session but no JWT
+    //             //@ts-ignore
+    //             if (session?.backendToken && !localStorage.getItem('token')) {
+    //                 //@ts-ignore
+    //                 localStorage.setItem('token', session.backendToken);
+    //                 //@ts-ignore
+    //                 localStorage.setItem('username', session.userData.username);
+    //             }
                 
-            } catch (error) {
-                console.error("Initialization error:", error);
-                // Handle error (maybe redirect to login)
-                router.push('/');
-            } finally {
-                setIsInitializing(false);
-            }
-        };
+    //             // If no auth at all, redirect to login
+    //             //@ts-ignore
+    //             if (!localStorage.getItem('token') && !session?.backendToken) {
+    //                 router.push('/');
+    //                 return;
+    //             }
+
+    //             // Fetch all required data
+    //             const storedUsername = localStorage.getItem("username");
+    //             setUsername(storedUsername);
+    //             greetingsTime();
+    //             await fetchRooms();
+                
+    //         } catch (error) {
+    //             console.error("Initialization error:", error);
+    //             // Handle error (maybe redirect to login)
+    //             router.push('/');
+    //         } finally {
+    //             setIsInitializing(false);
+    //         }
+    //     };
         
-        initializeDashboard();
-        updateLastActiveTime();
+    //     initializeDashboard();
+    //     updateLastActiveTime();
 
-    }, [session, router]);
+    // }, [session, router]);
 
-    useEffect(() => {
-        const storedUsername = localStorage.getItem("username");
-        setUsername(storedUsername);
-        greetingsTime();
-        fetchRooms();
-    }, []);
+    // useEffect(() => {
+    //     const storedUsername = localStorage.getItem("username");
+    //     setUsername(storedUsername);
+    //     greetingsTime();
+    //     fetchRooms();
+    // }, []);
   
-    useEffect(() => {
-      // Check if we have a NextAuth session but no JWT
-      //@ts-ignore
-      if (session?.backendToken && !localStorage.getItem('token')) {
-        //@ts-ignore
-        localStorage.setItem('token', session.backendToken);
-        //@ts-ignore
-        localStorage.setItem('username', session.userData.username);
+    // useEffect(() => {
+    //   // Check if we have a NextAuth session but no JWT
+    //   //@ts-ignore
+    //   if (session?.backendToken && !localStorage.getItem('token')) {
+    //     //@ts-ignore
+    //     localStorage.setItem('token', session.backendToken);
+    //     //@ts-ignore
+    //     localStorage.setItem('username', session.userData.username);
 
-      }
+    //   }
       
-      // If no auth at all, redirect to login
-      //@ts-ignore
-      if (!localStorage.getItem('token') && !session?.backendToken) {
-        router.push('/');
-      }
-    }, [session, router]);
+    //   // If no auth at all, redirect to login
+    //   //@ts-ignore
+    //   if (!localStorage.getItem('token') && !session?.backendToken) {
+    //     router.push('/');
+    //   }
+    // }, [session, router]);
 
     if (isInitializing) {
         return (

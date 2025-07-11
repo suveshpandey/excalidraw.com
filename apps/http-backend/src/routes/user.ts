@@ -41,10 +41,16 @@ userRouter.post("/signup", checkExistingUser, async (req, res) => {
             }
         })
         if(newUser){
-            //sign in done, returning a jwt token
-            const token = jwt.sign({
-                userId: newUser?.id
-            }, JWT_SECRET);
+            //sign up done, returning a jwt token
+            const token = jwt.sign(
+                {
+                    userId: newUser?.id
+                }, 
+                JWT_SECRET,
+                {
+                    expiresIn: "7d"
+                }
+            );
 
             res.status(201).json({
                 message: "User successfully registered",
@@ -111,9 +117,15 @@ userRouter.post("/signin", async (req, res) => {
         }
         
         //sign in done, returning a jwt token
-        const token = jwt.sign({
-            userId: user?.id
-        }, JWT_SECRET);
+        const token = jwt.sign(
+            {
+                userId: user?.id
+            }, 
+            JWT_SECRET,
+            {
+                expiresIn: "7d"
+            }
+        );
 
         res.status(200).json({
             message: "User signed in successfully.",

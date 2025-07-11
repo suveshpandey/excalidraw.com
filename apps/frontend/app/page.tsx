@@ -7,20 +7,26 @@ import { FeatureCard } from "../components/FeatureCard";
 import { HeroSection } from "../components/HeroSection";
 import { Footer } from "../components/Footer";
 import { useRouter } from 'next/navigation';
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 
 export default function Home() {
   const router = useRouter();
+  const [authChecked, setAuthChecked] = useState(false);
+
   useEffect(() => {
     const token = localStorage.getItem("token");
 
     if(token !== null && token !== "") {
       router.push("/dashboard");
     }
+    else {
+      setAuthChecked(true);
+    }
   
   }, [router]);
 
+  if(!authChecked) return null;
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 text-white">
