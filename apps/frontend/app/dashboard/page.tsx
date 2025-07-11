@@ -154,7 +154,7 @@ function App() {
         localStorage.setItem('lastActiveTime', now.toISOString());
     };
 
-     useEffect(() => {
+    useEffect(() => {
         const initializeDashboard = async () => {
             try {
                 // Check if we have a NextAuth session but no JWT

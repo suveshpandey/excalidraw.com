@@ -1,4 +1,4 @@
-import { Tool } from "@/components/Canvas";
+import { Color, Tool } from "@/components/Canvas";
 import { getExistingShapes } from "./http";
 
 type Shape = {
@@ -7,39 +7,46 @@ type Shape = {
     y: number,
     width: number,
     height: number,
-    border_radius: number 
+    border_radius: number,
+    color: string
 } | {
     type: "rhombus",
     x: number,
     y: number,
     width: number,
     height: number,
-    border_radius: number 
+    border_radius: number,
+    color: string
 } | {
     type: "circle",
     centerX: number,
     centerY: number,
-    radius: number
+    radius: number,
+    color: string
 } | {
     type: "line",
     "startX": number,
     "startY": number,
     "endX": number,
-    "endY": number
+    "endY": number,
+    color: string
 } | {
     type: "arrow",
     "startX": number,
     "startY": number,
     "endX": number,
-    "endY": number
+    "endY": number,
+    color: string
 } | {
     type: "pencil",
-    points: {x: number, y: number} [] // array of all points mouse moved through
+    points: {x: number, y: number} [] // array of all points mouse moved through,
+    color: string
 } | {
     type: "text",
     x: number,
     y: number,
-    value: string
+    value: string,
+    color: string
 }
 
 interface Point {
@@ -58,6 +65,7 @@ export class Game {
     private points: Point[]
     private textInput: HTMLInputElement;
     private selectedTool: Tool;
+    private selectedColor: Color;
 
     socket: WebSocket;
 
@@ -71,8 +79,9 @@ export class Game {
         this.startX = 0;
         this.startY = 0;
         this.points = [];
-        this.textInput = textInput
+        this.textInput = textInput;
         this.selectedTool = "rect";
+        this.selectedColor = "white";
 
         this.init();
         this.initHandlers();
@@ -89,6 +98,9 @@ export class Game {
 
     setTool(tool: "rect" | "rhombus" | "circle" | "line" | "arrow" | "text" | "pencil") {
         this.selectedTool = tool;
+    }
+    setColor(color: "blue" | "red" | "green" | "gray" | "white") {
+        this.selectedColor = color;
     }
 
     async init () {
@@ -116,11 +128,12 @@ export class Game {
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.existingShapes.map((shape) => {
+            this.ctx.strokeStyle = shape.color;
+            this.ctx.lineWidth = 2.5;
+            
             if(shape.type === "rect"){
-                this.ctx.strokeStyle = "rgba(255, 255, 255)";
                 this.ctx.beginPath();
                 this.ctx.roundRect(shape.x, shape.y, shape.width, shape.height, [10]);
-                this.ctx.lineWidth = 2;
                 this.ctx.stroke();
             }
             else if(shape.type === "rhombus") {
@@ -136,7 +149,6 @@ export class Game {
 
                 // 3. Draw the rounded rectangle centered at (0, 0)
                 this.ctx.roundRect(-shape.height / 2, -shape.height / 2, shape.height, shape.height, [10]);
-                this.ctx.lineWidth = 2;
                 this.ctx.stroke(); // Or fill()
                 this.ctx.restore(); // Restore canvas to original state
             }
@@ -144,7 +156,6 @@ export class Game {
             else if (shape.type === "circle") {
                 this.ctx.beginPath();
                 this.ctx.arc(shape.centerX, shape.centerY, Math.abs(shape.radius), 0, Math.PI * 2);
-                this.ctx.lineWidth = 2;
                 this.ctx.stroke();
                 this.ctx.closePath();
             }
@@ -152,21 +163,19 @@ export class Game {
                 this.ctx.beginPath();
                 this.ctx.moveTo(shape.startX, shape.startY);
                 this.ctx.lineTo(shape.endX, shape.endY);
-                this.ctx.lineWidth = 2;
                 this.ctx.stroke();
                 this.ctx.closePath();
             }
             else if(shape.type === "arrow") {
                 this.drawArrow(shape.startX, shape.startY, shape.endX, shape.endY);
-                this.ctx.lineWidth = 2;
             }
             else if(shape.type === "pencil") {
                 this.drawSmoothPath(shape.points);
             }
             else if(shape.type === "text") {
-                this.ctx.font = "18px Arial";
-                this.ctx.fillStyle = "#94a3b8";
-                this.ctx.fillText(shape.value, shape.x, shape.y);
+                this.ctx.font = "18px Cursive";
+                this.ctx.fillStyle = shape.color;
+                this.ctx.fillText(shape.value, shape.x, shape.y+11);
             }
         })
     }
@@ -195,13 +204,14 @@ export class Game {
                     event.preventDefault();
                     const value = input.value;
                     input.style.display = "none";
-                    input.style.fontFamily = "Arial"
+                    input.style.fontFamily = "Cursive"
 
                     const shape: Shape = {
                         type: "text",
                         x: this.startX,
                         y: this.startY,
-                        value: value
+                        value: value,
+                        color: this.selectedColor
                     };
 
                     this.existingShapes.push(shape);
@@ -242,7 +252,8 @@ export class Game {
                 y: this.startY,
                 width: width,
                 height: height,
-                border_radius: 10
+                border_radius: 10,
+                color: this.selectedColor
             };
         }
         else if (selectedTool === "circle") {
@@ -251,7 +262,8 @@ export class Game {
                 type: "circle",
                 radius: radius,
                 centerX: this.startX + radius,
-                centerY: this.startY + radius
+                centerY: this.startY + radius,
+                color: this.selectedColor
             };
         }
         else if(selectedTool === "line") {
@@ -260,7 +272,8 @@ export class Game {
                 startX: this.startX,
                 startY: this.startY,
                 endX: e.clientX,
-                endY: e.clientY
+                endY: e.clientY,
+                color: this.selectedColor
             };
         }
         else if(selectedTool === "arrow") {
@@ -269,13 +282,15 @@ export class Game {
                 startX: this.startX,
                 startY: this.startY,
                 endX: e.clientX,
-                endY: e.clientY
+                endY: e.clientY,
+                color: this.selectedColor
             }
         }
         else if(selectedTool === "pencil") {
             shape = {
                 type: "pencil",
-                points: [...this.points]
+                points: [...this.points],
+                color: this.selectedColor
             }
         }
         else if(selectedTool === "rhombus") {
@@ -285,7 +300,8 @@ export class Game {
                 y: this.startY,
                 width: width,
                 height: height,
-                border_radius: 10
+                border_radius: 10,
+                color: this.selectedColor
             };
         }
 
@@ -310,7 +326,8 @@ export class Game {
             const endY = e.clientY;
 
             this.clearCanvas();
-            this.ctx.strokeStyle = "rgba(255, 255, 255, 1)";
+            // this.ctx.strokeStyle = "rgba(255, 255, 255, 1)";
+            this.ctx.strokeStyle = this.selectedColor;
         
             //@ts-ignore
             const selectedTool = this.selectedTool;
@@ -411,7 +428,7 @@ export class Game {
             const midX = (points[i].x + points[i + 1].x) / 2;
             const midY = (points[i].y + points[i + 1].y) / 2;
             this.ctx.quadraticCurveTo(points[i].x, points[i].y, midX, midY);
-            this.ctx.lineWidth = 2;
+            this.ctx.lineWidth = 2.5;
         }
 
         this.ctx.stroke();
