@@ -29,34 +29,34 @@ export function RoomCanvas ({ roomId }: { roomId: string }) {
     // }, []);
 
     const [socket, setSocket] = useState<WebSocket | null>(null);
-const [connectionStatus, setConnectionStatus] = useState('connecting');
+    const [connectionStatus, setConnectionStatus] = useState('connecting');
 
-useEffect(() => {
-  const token = localStorage.getItem("token");
-  const ws = new WebSocket(`${WS_BACKEND}?token=${token}`);
+    useEffect(() => {
+      const token = localStorage.getItem("token");
+      const ws = new WebSocket(`${WS_BACKEND}?token=${token}`);
 
-  ws.onopen = () => {
-    console.log("WebSocket connected");
-    setConnectionStatus('connected');
-    setSocket(ws);
-    ws.send(JSON.stringify({
-      type: "join_room",
-      roomId: roomId
-    }));
-  };
+      ws.onopen = () => {
+        console.log("WebSocket connected");
+        setConnectionStatus('connected');
+        setSocket(ws);
+        ws.send(JSON.stringify({
+          type: "join_room",
+          roomId: roomId
+        }));
+      };
 
-  ws.onerror = (error) => {
-    console.error("WebSocket error:", error);
-    setConnectionStatus('error');
-  };
+      ws.onerror = (error) => {
+        console.error("WebSocket error:", error);
+        setConnectionStatus('error');
+      };
 
-  ws.onclose = () => {
-    console.log("WebSocket disconnected");
-    setConnectionStatus('disconnected');
-  };
+      ws.onclose = () => {
+        console.log("WebSocket disconnected");
+        setConnectionStatus('disconnected');
+      };
 
-  return () => ws.close();
-}, [roomId]);
+      return () => ws.close();
+    }, [roomId]);
 
     if(!socket) {
         return <div className="w-screen h-screen flex flex-col gap-y-3 items-center justify-center">

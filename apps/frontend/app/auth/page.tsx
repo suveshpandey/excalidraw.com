@@ -39,6 +39,7 @@ export default function AuthPage() {
           setLoading(false);
           localStorage.setItem("token", response.data.token);
           localStorage.setItem("username", response.data.userData.username);
+          localStorage.setItem("email", response.data.userData.email);
           console.log(response.data.token);
           router.push('/dashboard');
         }
@@ -53,6 +54,7 @@ export default function AuthPage() {
           setLoading(false);
           localStorage.setItem("token", response.data.token);
           localStorage.setItem("username", response.data.userData.username);
+          localStorage.setItem("email", response.data.userData.email);
           console.log(response.data.token);
           router.push('/dashboard');
         }

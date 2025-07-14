@@ -6,6 +6,9 @@ interface NavbarProps {
 }
 
 const Navbar: React.FC<NavbarProps> = ({ onLogout }) => {
+  const email = localStorage.getItem("email");
+  console.log(email || "email")
+
   return (
     <header className="py-4">
       <nav className="flex justify-between items-center">
@@ -19,10 +22,18 @@ const Navbar: React.FC<NavbarProps> = ({ onLogout }) => {
           </span>
         </div>
         
-        <div className="flex items-center space-x-3">
-          <button className="p-2.5 text-blue-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-all duration-200 cursor-pointer">
-            <User className="h-5 w-5" />
-          </button>
+        <div className="flex items-center space-x-3 relative">
+          {/* User button with tooltip */}
+          <div className="relative group">
+            <button className="p-2.5 text-blue-300 hover:text-white bg-white/5 hover:bg-white/10 rounded-full transition-all duration-200 cursor-pointer">
+              <User className="h-5 w-5" />
+            </button>
+            <div className="absolute hidden group-hover:block z-50 top-full left-1/2 transform -translate-x-1/2 mt-2 px-4 py-2 text-xs font-medium text-white bg-slate-900 rounded-full shadow-lg whitespace-nowrap">
+              {email || "user@gmail.com"}
+            </div>
+          </div>
+
+          {/* Logout button (unchanged) */}
           <button 
             onClick={onLogout}
             className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-white/5 hover:bg-white/10 rounded-full transition-all duration-200 cursor-pointer border border-white/10"

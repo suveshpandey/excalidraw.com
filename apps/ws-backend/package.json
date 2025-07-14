@@ -13,8 +13,9 @@
   "description": "",
   "devDependencies": {
     "@repo/backend-common": "workspace:*",
+    "@repo/db": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@repo/db": "workspace:*"
+    "@types/minimatch": "^6.0.0"
   },
   "dependencies": {
     "@types/dotenv": "^8.2.3",

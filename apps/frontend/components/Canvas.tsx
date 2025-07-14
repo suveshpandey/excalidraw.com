@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import React, { KeyboardEvent } from 'react';
-import { Square, Circle, Minus, ArrowUpRight, Undo2, Trash2Icon, PencilIcon, LetterText, Diamond, } from 'lucide-react';
+import { Square, Circle, Minus, ArrowUpRight, Undo2, Trash2Icon, PencilIcon, LetterText, Diamond, PenTool, Monitor} from 'lucide-react';
 import { Game } from "@/draw/game";
 import axios from "axios";
 import { HTTP_BACKEND } from "@/config";
@@ -10,6 +10,7 @@ import { getExistingShapes } from "@/draw/http";
 
 export type Tool = "rect" | "rhombus" | "circle" | "line" | "arrow" | "text" | "pencil";
 export type Color = "white" | "red" | "blue" | "green" | "gray";
+export type Background = "#fefae0" | "#edf2fb" | "#02111b" | "#0F172A" | "#000c14";
 
 export default function Canvas({ 
     roomId,
@@ -23,11 +24,19 @@ export default function Canvas({
     const [game, setGame] = useState<Game>();
     const [selectedTool, setSelectedTool] = useState<Tool>("rect");
     const [selectedColor, setSelectedColor] = useState<Color>("white");
+    const [selectedBg, setSelectedBg] = useState<Background>("#000c14");
+    const [isDark, setIsDark] = useState<boolean>(false);
 
     useEffect(() => {
         game?.setTool(selectedTool);
         game?.setColor(selectedColor);
-    }, [selectedTool, selectedColor, game]);
+        game?.setBg(selectedBg);
+        game?.clearCanvas();
+
+        if(selectedBg == "#fefae0" || selectedBg == "#edf2fb") setIsDark(false);
+        else setIsDark(true);
+
+    }, [selectedTool, selectedColor, selectedBg, game]);
 
     useEffect(() => {
         if(canvasRef.current && inputRef.current) {
@@ -41,7 +50,7 @@ export default function Canvas({
     }, [canvasRef, roomId, socket]);
 
     return (
-        <div className={`h-screen w-screen overflow-hidden bg-slate-900`}>
+        <div className={`h-screen w-screen overflow-hidden cursor-crosshair`}>
             <canvas 
                 ref={canvasRef} 
                 className="bg-slate-900"
@@ -53,7 +62,7 @@ export default function Canvas({
                 type="text" 
                 ref={inputRef}  
                 placeholder="Type here..."
-                className={`absolute outline-none`}
+                className={`absolute outline-none tracking-wider`}
                 style={{ 
                     display: "none", 
                     zIndex: 1000,
@@ -69,13 +78,24 @@ export default function Canvas({
                 setSelectedTool={setSelectedTool} 
                 game={game}
                 roomId={roomId}
+                isDark={isDark}
             />
-            <ColorPallete 
-                selectedColor={selectedColor}
-                setSelectedColor={setSelectedColor}
+            <div className={`fixed right-2 bottom-2 flex flex-col ${isDark ? "bg-slate-800" : "bg-gray-100/9"} gap-y-2 p-2 rounded-md shadow-lg `}>
+                <ColorPallete 
+                    selectedColor={selectedColor}
+                    setSelectedColor={setSelectedColor}
+                    game={game}
+                    roomId={roomId}
+                    isDark={isDark}
+                />
+            <BackgroundColorPallete 
+                selectedBg={selectedBg}
+                setSelectedBg={setSelectedBg}
                 game={game}
                 roomId={roomId}
+                isDark={isDark}
             />
+            </div>
         </div>
     )
 }
@@ -84,12 +104,14 @@ function Topbar ({
     selectedTool, 
     setSelectedTool, 
     game, 
-    roomId
+    roomId,
+    isDark
 }: {
     selectedTool: Tool,
     setSelectedTool: (s: Tool) => void,
     game?: Game,
-    roomId: string
+    roomId: string,
+    isDark: boolean
 }) {
     const [token, setToken] = useState<string | null>(null);
 
@@ -144,11 +166,11 @@ function Topbar ({
 
     return (
         <div className="w-full flex justify-center fixed top-2 px-2">
-            <div className="flex items-center gap-2 bg-slate-800/90 backdrop-blur-sm rounded-md py-1.5 px-4 border border-slate-700 shadow-lg">
+            <div className={`flex items-center gap-2 ${isDark ? "bg-slate-800/90 text-gray-300 border border-gray-500" : "bg-gray-100/90 text-slate-500"} backdrop-blur-sm rounded-md py-1.5 px-4 shadow-lg`}>
                 <div className="flex items-center gap-2">
                     <button
                         onClick={() => setSelectedTool("rect")} 
-                        className={`p-2 relative rounded-lg transition-all cursor-pointer ${selectedTool === "rect" ? "bg-slate-600/70 text-green-300 shadow-md" : "text-slate-300 hover:bg-slate-600"}`}
+                        className={`p-2 relative rounded-lg transition-all cursor-pointer ${isDark ? "hover:bg-slate-600" : "hover:bg-slate-300"} ${selectedTool === "rect" && (isDark ? "bg-slate-600" : "bg-slate-300")}`}
                         aria-label="Rectangle tool"
                     >    
                         <Square size={20} strokeWidth={1.75} />   
@@ -156,7 +178,7 @@ function Topbar ({
                     </button>
                     <button 
                         onClick={() => setSelectedTool("rhombus")} 
-                        className={`p-2 relative rounded-lg transition-all cursor-pointer ${selectedTool === "rhombus" ? "bg-slate-600/70 text-green-300 shadow-md" : "text-slate-300 hover:bg-slate-600"}`}
+                        className={`p-2 relative rounded-lg transition-all cursor-pointer ${isDark ? "hover:bg-slate-600" : "hover:bg-slate-300"} ${selectedTool === "rhombus" && (isDark ? "bg-slate-600" : "bg-slate-300")}`}
                         aria-label="Rhombus tool"
                     >
                         <Diamond size={20} strokeWidth={1.75} />
@@ -164,7 +186,7 @@ function Topbar ({
                     </button>
                     <button 
                         onClick={() => setSelectedTool("circle")} 
-                        className={`p-2 relative rounded-lg transition-all cursor-pointer ${selectedTool === "circle" ? "bg-slate-600/70 text-green-300 shadow-md" : "text-slate-300 hover:bg-slate-600"}`}
+                        className={`p-2 relative rounded-lg transition-all cursor-pointer ${isDark ? "hover:bg-slate-600" : "hover:bg-slate-300"} ${selectedTool === "circle" && (isDark ? "bg-slate-600" : "bg-slate-300")}`}
                         aria-label="Circle tool"
                     >
                         <Circle size={20} strokeWidth={1.75} />
@@ -172,7 +194,7 @@ function Topbar ({
                     </button>
                     <button 
                         onClick={() => setSelectedTool("arrow")} 
-                        className={`p-2 relative rounded-lg transition-all cursor-pointer ${selectedTool === "arrow" ? "bg-slate-600/70 text-green-300 shadow-md" : "text-slate-300 hover:bg-slate-600"}`}
+                        className={`p-2 relative rounded-lg transition-all cursor-pointer ${isDark ? "hover:bg-slate-600" : "hover:bg-slate-300"} ${selectedTool === "arrow" && (isDark ? "bg-slate-600" : "bg-slate-300")}`}
                         aria-label="Arrow tool"
                     >
                         <ArrowUpRight size={20} strokeWidth={1.75} />
@@ -180,7 +202,7 @@ function Topbar ({
                     </button>
                     <button 
                         onClick={() => setSelectedTool("line")} 
-                        className={`p-2 relative rounded-lg transition-all cursor-pointer ${selectedTool === "line" ? "bg-slate-600/70 text-green-300 shadow-md" : "text-slate-300 hover:bg-slate-600"}`}
+                        className={`p-2 relative rounded-lg transition-all cursor-pointer ${isDark ? "hover:bg-slate-600" : "hover:bg-slate-300"} ${selectedTool === "line" && (isDark ? "bg-slate-600" : "bg-slate-300")}`}
                         aria-label="Line tool"
                     >
                         <Minus size={20} strokeWidth={1.75} />
@@ -188,7 +210,7 @@ function Topbar ({
                     </button>
                     <button 
                         onClick={() => setSelectedTool("pencil")} 
-                        className={`p-2 relative rounded-lg transition-all cursor-pointer ${selectedTool === "pencil" ? "bg-slate-600/70 text-green-300 shadow-md" : "text-slate-300 hover:bg-slate-600"}`}
+                        className={`p-2 relative rounded-lg transition-all cursor-pointer ${isDark ? "hover:bg-slate-600" : "hover:bg-slate-300"} ${selectedTool === "pencil" && (isDark ? "bg-slate-600" : "bg-slate-300")}`}
                         aria-label="Pencil tool"
                     >
                         <PencilIcon size={20} strokeWidth={1.75} />
@@ -196,7 +218,7 @@ function Topbar ({
                     </button>
                     <button 
                         onClick={() => setSelectedTool("text")} 
-                        className={`p-2 relative rounded-lg transition-all cursor-pointer ${selectedTool === "text" ? "bg-slate-600/70 text-green-300 shadow-md" : "text-slate-300 hover:bg-slate-600"}`}
+                        className={`p-2 relative rounded-lg transition-all cursor-pointer ${isDark ? "hover:bg-slate-600" : "hover:bg-slate-300"} ${selectedTool === "text" && (isDark ? "bg-slate-600" : "bg-slate-300")}`}
                         aria-label="Text tool"
                     >
                         <LetterText size={20} strokeWidth={1.75} />
@@ -208,14 +230,14 @@ function Topbar ({
                 
                 <button 
                     onClick={handleDeleteLastShape}
-                    className="p-2 cursor-pointer text-slate-300 hover:text-white hover:bg-slate-600 active:bg-slate-500 rounded-lg transition-all"
+                    className={`p-2 cursor-pointer ${isDark ? "hover:text-white hover:bg-slate-600 active:bg-slate-500" : "hover:text-white hover:bg-slate-300 active:bg-slate-400"} rounded-lg transition-all`}
                     aria-label="Undo last action"
                 >
                     <Undo2 size={20} strokeWidth={1.75} />
                 </button>
                 <button 
                     onClick={handleDeleteAllShapes}
-                    className="p-2 cursor-pointer text-slate-300 hover:text-white hover:bg-slate-600 active:bg-slate-500 rounded-lg transition-all"
+                    className={`p-2 cursor-pointer ${isDark ? "hover:text-white hover:bg-slate-600 active:bg-slate-500" : "hover:text-white hover:bg-slate-300 active:bg-slate-400"}  rounded-lg transition-all`}
                     aria-label="Undo last action"
                 >
                     <Trash2Icon size={20} strokeWidth={1.75} />
@@ -229,19 +251,24 @@ function ColorPallete ({
     selectedColor, 
     setSelectedColor, 
     game, 
-    roomId
+    roomId,
+    isDark
 }: {
     selectedColor: Color,
     setSelectedColor: (s: Color) => void,
     game?: Game,
-    roomId: string
+    roomId: string,
+    isDark: boolean
 }) {
     useEffect(() => {
         console.log(`select color clicked - ${selectedColor}`)
     }, [selectedColor])
 
     return (
-        <div className="fixed top-2 left-2 flex items-center gap-3 bg-slate-800/90 backdrop-blur-sm rounded-md py-3 px-4 border border-slate-700 shadow-lg">
+        <div className={`flex items-center gap-3 backdrop-blur-lg rounded-md py-2 px-4 border border-slate-700`}>
+            <PenTool size={20} strokeWidth={1.75} color="gray" />
+            
+            <div className="h-8 w-px bg-slate-600"></div>
             <button
                 onClick={() => setSelectedColor("blue")} 
                 className={`h-6 w-6 bg-blue-500 opacity-60 rounded-sm transition-all duration-200 cursor-pointer ${selectedColor === 'blue' ? "ring-3 ring-blue-500 opacity-100" : ""}`}
@@ -270,6 +297,58 @@ function ColorPallete ({
                 onClick={() => setSelectedColor("white")} 
                 className={`h-6 w-6 bg-white opacity-80 rounded-sm transition-all duration-200 cursor-pointer ${selectedColor === 'white' ? "ring-3 ring-white opacity-100" : ""}`}
                 aria-label="White"
+            >    
+            </button>
+        </div>       
+    )
+}
+
+function BackgroundColorPallete ({
+    selectedBg, 
+    setSelectedBg, 
+    game, 
+    roomId,
+    isDark
+}: {
+    selectedBg: Background,
+    setSelectedBg: (s: Background) => void,
+    game?: Game,
+    roomId: string,
+    isDark: boolean
+}) {
+    useEffect(() => {
+        console.log(`select color clicked - ${selectedBg}`)
+    }, [selectedBg])
+
+    return (
+        <div className="flex items-center gap-3 backdrop-blur-lg rounded-md py-2 px-4 border border-slate-700">
+            <Monitor size={20} strokeWidth={1.75} color="gray" />
+            
+            <div className="h-8 w-px bg-slate-600"></div>
+            
+            <button
+                onClick={() => setSelectedBg("#fefae0")} 
+                className={`h-6 w-6 bg-[#fefae0] opacity-60 rounded-sm transition-all duration-200 cursor-pointer ${selectedBg === '#fefae0' ? "ring-3 ring-[#fefae0] opacity-100" : ""}`}
+            >    
+            </button>
+            <button
+                onClick={() => setSelectedBg("#edf2fb")} 
+                className={`h-6 w-6 bg-[#edf2fb] opacity-60 rounded-sm transition-all duration-200 cursor-pointer ${selectedBg === '#edf2fb' ? "ring-3 ring-[#edf2fb] opacity-100" : ""}`}
+            >    
+            </button>
+            <button
+                onClick={() => setSelectedBg("#02111b")} 
+                className={`h-6 w-6 bg-[#02111b] opacity-60 rounded-sm transition-all duration-200 cursor-pointer ${selectedBg === '#02111b' ? "ring-3 ring-[#02111b] opacity-100" : ""}`}
+            >    
+            </button>
+            <button
+                onClick={() => setSelectedBg("#0F172A")} 
+                className={`h-6 w-6 bg-[#0F172A] opacity-60 rounded-sm transition-all duration-200 cursor-pointer ${selectedBg === '#0F172A' ? "ring-3 ring-[#0F172A] opacity-100" : ""}`}
+            >    
+            </button>
+            <button
+                onClick={() => setSelectedBg("#000c14")} 
+                className={`h-6 w-6 bg-[#000c14] opacity-80 rounded-sm transition-all duration-200 cursor-pointer ${selectedBg === '#000c14' ? "ring-3 ring-[#000c14] opacity-100" : ""}`}
             >    
             </button>
         </div>       

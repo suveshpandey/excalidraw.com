@@ -1,4 +1,4 @@
-import { Color, Tool } from "@/components/Canvas";
+import { Color, Tool, Background } from "@/components/Canvas";
 import { getExistingShapes } from "./http";
 
 type Shape = {
@@ -66,6 +66,7 @@ export class Game {
     private textInput: HTMLInputElement;
     private selectedTool: Tool;
     private selectedColor: Color;
+    private selectedBg: Background;
 
     socket: WebSocket;
 
@@ -82,6 +83,7 @@ export class Game {
         this.textInput = textInput;
         this.selectedTool = "rect";
         this.selectedColor = "white";
+        this.selectedBg = "#000c14";
 
         this.init();
         this.initHandlers();
@@ -101,6 +103,9 @@ export class Game {
     }
     setColor(color: "blue" | "red" | "green" | "gray" | "white") {
         this.selectedColor = color;
+    }
+    setBg(bgColor: "#fefae0" | "#edf2fb" | "#02111b" | "#0F172A" | "#000c14") {
+        this.selectedBg = bgColor;
     }
 
     async init () {
@@ -124,7 +129,8 @@ export class Game {
         console.log("clear canvas called")
         // Clear and redraw black background first
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.ctx.fillStyle = "rgba(13, 27, 42)";
+        // this.ctx.fillStyle = "rgba(13, 27, 42)";
+        this.ctx.fillStyle = this.selectedBg;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.existingShapes.map((shape) => {
@@ -174,6 +180,7 @@ export class Game {
             }
             else if(shape.type === "text") {
                 this.ctx.font = "18px Cursive";
+                this.ctx.letterSpacing = "1px"
                 this.ctx.fillStyle = shape.color;
                 this.ctx.fillText(shape.value, shape.x, shape.y+11);
             }

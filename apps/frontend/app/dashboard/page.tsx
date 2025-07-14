@@ -13,7 +13,7 @@ import { signOut, useSession } from 'next-auth/react';
 type Room = {
   id: number,
   slug: string,
-  crreatedAt: string,
+  createdAt: string,
   adminId: string
 }
 
@@ -194,70 +194,6 @@ function App() {
       init();
     }, [session, router]);
 
-
-    // useEffect(() => {
-    //     const initializeDashboard = async () => {
-    //         try {
-    //             // Check if we have a NextAuth session but no JWT
-    //             //@ts-ignore
-    //             if (session?.backendToken && !localStorage.getItem('token')) {
-    //                 //@ts-ignore
-    //                 localStorage.setItem('token', session.backendToken);
-    //                 //@ts-ignore
-    //                 localStorage.setItem('username', session.userData.username);
-    //             }
-                
-    //             // If no auth at all, redirect to login
-    //             //@ts-ignore
-    //             if (!localStorage.getItem('token') && !session?.backendToken) {
-    //                 router.push('/');
-    //                 return;
-    //             }
-
-    //             // Fetch all required data
-    //             const storedUsername = localStorage.getItem("username");
-    //             setUsername(storedUsername);
-    //             greetingsTime();
-    //             await fetchRooms();
-                
-    //         } catch (error) {
-    //             console.error("Initialization error:", error);
-    //             // Handle error (maybe redirect to login)
-    //             router.push('/');
-    //         } finally {
-    //             setIsInitializing(false);
-    //         }
-    //     };
-        
-    //     initializeDashboard();
-    //     updateLastActiveTime();
-
-    // }, [session, router]);
-
-    // useEffect(() => {
-    //     const storedUsername = localStorage.getItem("username");
-    //     setUsername(storedUsername);
-    //     greetingsTime();
-    //     fetchRooms();
-    // }, []);
-  
-    // useEffect(() => {
-    //   // Check if we have a NextAuth session but no JWT
-    //   //@ts-ignore
-    //   if (session?.backendToken && !localStorage.getItem('token')) {
-    //     //@ts-ignore
-    //     localStorage.setItem('token', session.backendToken);
-    //     //@ts-ignore
-    //     localStorage.setItem('username', session.userData.username);
-
-    //   }
-      
-    //   // If no auth at all, redirect to login
-    //   //@ts-ignore
-    //   if (!localStorage.getItem('token') && !session?.backendToken) {
-    //     router.push('/');
-    //   }
-    // }, [session, router]);
 
     if (isInitializing) {
         return (
