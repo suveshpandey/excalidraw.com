@@ -14,6 +14,10 @@ app.use(cors({
   credentials: true
 }));
 
+app.get('/health', (req, res) => {
+  res.status(200).send('OK');
+});
+
 app.use("/api/v1/user", userRouter)
 
 app.listen(8080, () => console.log("http-backend is running on port 8080..."));
